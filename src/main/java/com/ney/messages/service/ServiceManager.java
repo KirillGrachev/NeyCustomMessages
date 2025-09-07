@@ -7,74 +7,68 @@ import com.ney.messages.service.event.DeathMessageService;
 import com.ney.messages.service.event.JoinMessageService;
 import com.ney.messages.service.event.QuitMessageService;
 
+import com.ney.messages.util.Lazy;
+
 public class ServiceManager {
 
-    private final NeyCustomMessages plugin;
-    private final ConfigManager configManager;
-
-    private TitleService titleService;
-    private SoundService soundService;
-    private BossBarService bossBarService;
-    private DeathMessageService deathMessageService;
-    private JoinMessageService joinMessageService;
-    private QuitMessageService quitMessageService;
-    private AnnouncementService announcementService;
+    private final Lazy<TitleService> titleService;
+    private final Lazy<SoundService> soundService;
+    private final Lazy<BossBarService> bossBarService;
+    private final Lazy<DeathMessageService> deathMessageService;
+    private final Lazy<JoinMessageService> joinMessageService;
+    private final Lazy<QuitMessageService> quitMessageService;
+    private final Lazy<AnnouncementService> announcementService;
 
     public ServiceManager(NeyCustomMessages plugin, ConfigManager configManager) {
-        this.plugin = plugin;
-        this.configManager = configManager;
+
+        this.titleService = new Lazy<>(TitleService::new);
+        this.soundService = new Lazy<>(() -> new SoundService(plugin));
+        this.bossBarService = new Lazy<>(() -> new BossBarService(plugin));
+
+        this.deathMessageService = new Lazy<>(() ->
+                new DeathMessageService(plugin, configManager, getTitleService(), getSoundService())
+        );
+
+        this.joinMessageService = new Lazy<>(() ->
+                new JoinMessageService(configManager, getTitleService(), getSoundService())
+        );
+
+        this.quitMessageService = new Lazy<>(() ->
+                new QuitMessageService(configManager, getTitleService(), getSoundService())
+        );
+
+        this.announcementService = new Lazy<>(() ->
+                new AnnouncementService(configManager, getTitleService(), getSoundService(),
+                        getBossBarService())
+        );
+
     }
 
     public TitleService getTitleService() {
-        if (titleService == null) {
-            titleService = new TitleService();
-        }
-        return titleService;
+        return titleService.get();
     }
 
     public SoundService getSoundService() {
-        if (soundService == null) {
-            soundService = new SoundService(plugin);
-        }
-        return soundService;
+        return soundService.get();
     }
 
     public BossBarService getBossBarService() {
-        if (bossBarService == null) {
-            bossBarService = new BossBarService(plugin);
-        }
-        return bossBarService;
+        return bossBarService.get();
     }
 
     public DeathMessageService getDeathMessageService() {
-        if (deathMessageService == null) {
-            deathMessageService = new DeathMessageService(plugin,
-                    configManager, getTitleService(), getSoundService());
-        }
-        return deathMessageService;
+        return deathMessageService.get();
     }
 
     public JoinMessageService getJoinMessageService() {
-        if (joinMessageService == null) {
-            joinMessageService = new JoinMessageService(configManager,
-                    getTitleService(), getSoundService());
-        }
-        return joinMessageService;
+        return joinMessageService.get();
     }
 
     public QuitMessageService getQuitMessageService() {
-        if (quitMessageService == null) {
-            quitMessageService = new QuitMessageService(configManager,
-                    getTitleService(), getSoundService());
-        }
-        return quitMessageService;
+        return quitMessageService.get();
     }
 
     public AnnouncementService getAnnouncementService() {
-        if (announcementService == null) {
-            announcementService = new AnnouncementService(configManager,
-                    getTitleService(), getSoundService(), getBossBarService());
-        }
-        return announcementService;
+        return announcementService.get();
     }
 }
