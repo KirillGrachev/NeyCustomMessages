@@ -20,54 +20,61 @@ public class ServiceManager {
     private QuitMessageService quitMessageService;
     private AnnouncementService announcementService;
 
-    public ServiceManager(NeyCustomMessages plugin,
-                          ConfigManager configManager) {
-
+    public ServiceManager(NeyCustomMessages plugin, ConfigManager configManager) {
         this.plugin = plugin;
         this.configManager = configManager;
-
-        initializeServices();
-
-    }
-
-    private void initializeServices() {
-
-        this.titleService = new TitleService();
-        this.soundService = new SoundService(plugin);
-        this.bossBarService = new BossBarService(plugin);
-
-        this.deathMessageService = new DeathMessageService(plugin, configManager, titleService, soundService);
-        this.joinMessageService = new JoinMessageService(configManager, titleService, soundService);
-        this.quitMessageService = new QuitMessageService(configManager, titleService, soundService);
-        this.announcementService = new AnnouncementService(configManager, titleService, soundService, bossBarService);
-
     }
 
     public TitleService getTitleService() {
+        if (titleService == null) {
+            titleService = new TitleService();
+        }
         return titleService;
     }
 
     public SoundService getSoundService() {
+        if (soundService == null) {
+            soundService = new SoundService(plugin);
+        }
         return soundService;
     }
 
     public BossBarService getBossBarService() {
+        if (bossBarService == null) {
+            bossBarService = new BossBarService(plugin);
+        }
         return bossBarService;
     }
 
     public DeathMessageService getDeathMessageService() {
+        if (deathMessageService == null) {
+            deathMessageService = new DeathMessageService(plugin,
+                    configManager, getTitleService(), getSoundService());
+        }
         return deathMessageService;
     }
 
     public JoinMessageService getJoinMessageService() {
+        if (joinMessageService == null) {
+            joinMessageService = new JoinMessageService(configManager,
+                    getTitleService(), getSoundService());
+        }
         return joinMessageService;
     }
 
     public QuitMessageService getQuitMessageService() {
+        if (quitMessageService == null) {
+            quitMessageService = new QuitMessageService(configManager,
+                    getTitleService(), getSoundService());
+        }
         return quitMessageService;
     }
 
     public AnnouncementService getAnnouncementService() {
+        if (announcementService == null) {
+            announcementService = new AnnouncementService(configManager,
+                    getTitleService(), getSoundService(), getBossBarService());
+        }
         return announcementService;
     }
 }
