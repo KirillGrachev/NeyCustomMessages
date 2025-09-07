@@ -1,0 +1,162 @@
+# _   _             _____          _                  __  __
+#| \ | |           / ____|        | |                |  \/  |
+#|  \| | ___ _   _| |    _   _ ___| |_ ___  _ __ ___ | \  / | ___  ___ ___  __ _  __ _  ___  ___
+#| . ` |/ _ \ | | | |   | | | / __| __/ _ \| '_ ` _ \| |\/| |/ _ \/ __/ __|/ _` |/ _` |/ _ \/ __|
+#| |\  |  __/ |_| | |___| |_| \__ \ || (_) | | | | | | |  | |  __/\__ \__ \ (_| | (_| |  __/\__ \
+#|_| \_|\___|\__, |\_____\__,_|___/\__\___/|_| |_| |_|_|  |_|\___||___/___/\__,_|\__, |\___||___/
+#            __/ |                                                               __/ |
+#           |___/                                                               |___/
+
+# Разработчик - https://t.me/NeyOff
+
+# ────────────────────────────────────────────────────────
+# | МОДУЛЬ: Игрок присоединяется к серверу (Player Join) |
+# ────────────────────────────────────────────────────────
+join:
+  # Включить/выключить весь модуль приветствия
+  enabled: true
+
+  # ─ Сообщение в чате
+  message:
+    enabled: true  # Показывать ли сообщение в чате
+    format: "&a[+] &e{player} &7присоединился к серверу!"  # Формат сообщения
+    # {player} — будет заменено на имя игрока
+
+  # ─ Эффект титров (в центре экрана)
+  title:
+    enabled: true  # Показывать ли титры
+    title: "&aДобро пожаловать!"         # Основной текст (заголовок)
+    subtitle: "&e{player}"               # Второстепенный текст
+    fadeIn: 10      # Время появления (в тиках, 20 тиков = 1 сек)
+    stay: 70        # Время отображения
+    fadeOut: 20     # Время исчезновения
+
+  # ─ Звук при входе
+  sound:
+    enabled: true  # Проигрывать ли звук
+    name: "ENTITY_PLAYER_LEVELUP"  # Название звука (Minecraft ID)
+    volume: 1.0    # Громкость (0.0 — тихо, 2.0 — громко)
+    pitch: 1.0     # Высота тона (0.5 — низкий, 2.0 — высокий)
+
+  # ─ Босс-бар (полоска сверху)
+  bossbar:
+    enabled: true  # Показывать ли босс-бар
+    text: "&aПривет, {player}!"  # Текст в босс-баре
+    color: "GREEN"       # Цвет: RED, BLUE, GREEN, YELLOW и др.
+    style: "SOLID"       # Стиль: SOLID, PROGRESS, NOTCHED_6 и др.
+    duration: 5          # Длительность показа (в секундах)
+
+# ──────────────────────────────────────────────────────
+# | МОДУЛЬ: Игрок покидает сервер (Player Quit)        |
+# ──────────────────────────────────────────────────────
+quit:
+  enabled: true
+
+  message:
+    enabled: true
+    format: "&c[-] &e{player} &7покинул сервер."
+
+  title:
+    enabled: false  # Титры при выходе — выключены
+    title: "&cПока!"
+    subtitle: "&7Увидимся, {player}..."
+    fadeIn: 10
+    stay: 50
+    fadeOut: 20
+
+  sound:
+    enabled: false  # Звук при выходе — выключен
+    name: "ENTITY_ENDERMAN_TELEPORT"
+    volume: 0.8
+    pitch: 0.9
+
+# ──────────────────────────────────────────────────────
+# | МОДУЛЬ: Игрок умирает (Player Death)               |
+# ──────────────────────────────────────────────────────
+death:
+  enabled: true
+
+  message:
+    enabled: true
+    format: "&4[☠] &e{player} &7погиб. Причина: {death_cause}"
+    # {death_cause} — автоматически подставляется (например, "fell from height")
+
+  title:
+    enabled: true
+    title: "&4Ты погиб!"
+    subtitle: "&7Причина: {death_cause}"
+    fadeIn: 5
+    stay: 60
+    fadeOut: 15
+
+  sound:
+    enabled: true
+    name: "ENTITY_GENERIC_EXPLODE"
+    volume: 1.0
+    pitch: 1.2
+
+# ──────────────────────────────────────────────────────
+# | МОДУЛЬ: Анонсы (периодические сообщения)           |
+# ──────────────────────────────────────────────────────
+announces:
+  enabled: true      # Включить анонсы
+  interval: 15       # Интервал между анонсами (в секундах)
+  random: true       # Показывать анонсы в случайном порядке
+
+  messages:
+
+    announce_1:
+      message:
+        enabled: true
+        format: "&6[АНОНС] &eСледующий ивент через 10 минут!"
+        hover: "&aНажми, чтобы открыть сайт\n&7https://t.me/NeyOff  "  # Текст при наведении
+        click: "https://t.me/NeyOff"                                  # Что произойдёт при клике
+        clickAction: "OPEN_URL"                                       # Действие: OPEN_URL, RUN_COMMAND, SUGGEST_COMMAND
+
+      title:
+        enabled: true
+        title: "&6Внимание!"
+        subtitle: "&eСкоро ивент!"
+        fadeIn: 10
+        stay: 80
+        fadeOut: 20
+
+      sound:
+        enabled: true
+        name: "BLOCK_NOTE_BLOCK_PLING"
+        volume: 1.0
+        pitch: 1.0
+
+      bossbar:
+        enabled: true
+        text: "&6Ивент скоро начнётся!"
+        color: "YELLOW"
+        style: "SOLID"
+        duration: 8
+        progress-decay: true  # Прогресс бара будет уменьшаться со временем
+
+    announce_2:
+      message:
+        enabled: false  # Сообщение отключено
+
+      title:
+        enabled: true
+        title: "&dСпасибо за игру!"
+        subtitle: "&7Поддержи сервер донатом!"
+        fadeIn: 15
+        stay: 100
+        fadeOut: 25
+
+      sound:
+        enabled: true
+        name: "ENTITY_EXPERIENCE_ORB_PICKUP"
+        volume: 0.7
+        pitch: 1.5
+
+      bossbar:
+        enabled: false  # Босс-бар отключён
+        text: "&6Ивент скоро начнётся!"
+        color: "YELLOW"
+        style: "SOLID"
+        duration: 8
+        progress-decay: false  # Прогресс бара будет уменьшаться со временем

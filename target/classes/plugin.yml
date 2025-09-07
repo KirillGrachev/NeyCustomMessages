@@ -1,0 +1,5 @@
+name: NeyCustomMessages
+version: '1.0.0'
+main: com.ney.messages.NeyCustomMessages
+api-version: '1.13'
+load: STARTUP
