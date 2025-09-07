@@ -123,10 +123,11 @@ public class ConfigManager {
 
         try {
 
+            boolean messageEnabled = getBooleanWithValidation(section, "message.enabled", false);
             String messageFormat = getStringWithColor(section, "message.format", "");
             String hoverText = getStringWithColor(section, "message.hover", "");
-            String clickValue = section.getString("message.click", "");
-            String clickActionStr = section.getString("message.clickAction", "").toUpperCase();
+            String clickValue = getStringWithValidation(section,"message.click", "");
+            String clickActionStr = getStringWithValidation(section,"message.clickAction", "").toUpperCase();
 
             ClickEvent.Action clickAction = null;
 
@@ -140,29 +141,35 @@ public class ConfigManager {
 
             }
 
+            boolean titleEnabled = getBooleanWithValidation(section,"title.enabled", false);
             String title = getStringWithColor(section, "title.title", "");
             String subtitle = getStringWithColor(section, "title.subtitle", "");
             int fadeIn = getIntWithValidation(section, "title.fadeIn", 10, 0, 100);
             int stay = getIntWithValidation(section, "title.stay", 70, 0, 200);
             int fadeOut = getIntWithValidation(section, "title.fadeOut", 20, 0, 100);
 
+            boolean soundEnabled = getBooleanWithValidation(section, "sound.enabled", false);
             String soundName = getStringWithValidation(section, "sound.name", "BLOCK_NOTE_BLOCK_PLING");
             float soundVolume = (float) getDoubleWithValidation(section, "sound.volume", 1.0, 0.0, 2.0);
             float soundPitch = (float) getDoubleWithValidation(section, "sound.pitch", 1.0, 0.0, 2.0);
 
+            boolean bossBarEnabled = getBooleanWithValidation(section,"bossbar.enabled", false);
             String bossBarText = getStringWithColor(section, "bossbar.text", "");
-            String colorStr = section.getString("bossbar.color", "YELLOW");
+            String colorStr = getStringWithValidation(section, "bossbar.color", "YELLOW");
             BarColor bossBarColor = validateBarColor(colorStr);
-            String styleStr = section.getString("bossbar.style", "SOLID");
+            String styleStr = getStringWithValidation(section,"bossbar.style", "SOLID");
             BarStyle bossBarStyle = validateBarStyle(styleStr);
+
             int duration = getIntWithValidation(section, "bossbar.duration", 5, 1, 60);
-            boolean progressDecay = section.getBoolean("bossbar.progress-decay", false);
+            boolean progressDecay = getBooleanWithValidation(section, "bossbar.progress-decay", false);
 
             return new Announcement(
                     messageFormat, hoverText, clickAction, clickValue,
                     title, subtitle, fadeIn, stay, fadeOut,
                     soundName, soundVolume, soundPitch,
-                    bossBarText, bossBarColor, bossBarStyle, duration, progressDecay
+                    bossBarText, bossBarColor, bossBarStyle,
+                    duration, progressDecay, bossBarEnabled,
+                    soundEnabled, titleEnabled, messageEnabled
             );
 
         } catch (Exception e) {
@@ -197,20 +204,20 @@ public class ConfigManager {
         }
     }
 
-    private @NotNull String getStringWithColor(String path, String def) {
+    public @NotNull String getStringWithColor(String path, String def) {
         return HexColorUtil.color(getString(path, def));
     }
 
-    private @NotNull String getStringWithColor(@NotNull ConfigurationSection section,
+    public @NotNull String getStringWithColor(@NotNull ConfigurationSection section,
                                                String path, String def) {
         return HexColorUtil.color(section.getString(path, def));
     }
 
-    private String getString(String path, String def) {
+    public String getString(String path, String def) {
         return config.getString(path, def);
     }
 
-    private String getStringWithValidation(String path, String def) {
+    public String getStringWithValidation(String path, String def) {
 
         String value = config.getString(path, def);
         if (value == null || value.trim().isEmpty()) {
@@ -224,7 +231,7 @@ public class ConfigManager {
 
     }
 
-    private String getStringWithValidation(@NotNull ConfigurationSection section, String path, String def) {
+    public String getStringWithValidation(@NotNull ConfigurationSection section, String path, String def) {
 
         String value = section.getString(path, def);
         if (value == null || value.trim().isEmpty()) {
@@ -238,7 +245,7 @@ public class ConfigManager {
 
     }
 
-    private boolean getBooleanWithValidation(String path, boolean def) {
+    public boolean getBooleanWithValidation(String path, boolean def) {
 
         if (!config.isBoolean(path)) {
 
@@ -251,7 +258,20 @@ public class ConfigManager {
 
     }
 
-    private int getIntWithValidation(String path, int def, int min, int max) {
+    public boolean getBooleanWithValidation(@NotNull ConfigurationSection section, String path, boolean def) {
+
+        if (!section.isBoolean(path)) {
+
+            plugin.getLogger().warning("Значение для " + path + " в секции не является булевым. Используется значение по умолчанию: " + def);
+            return def;
+
+        }
+
+        return section.getBoolean(path, def);
+
+    }
+
+    public int getIntWithValidation(String path, int def, int min, int max) {
 
         if (!config.isInt(path)) {
 
@@ -272,7 +292,7 @@ public class ConfigManager {
 
     }
 
-    private int getIntWithValidation(@NotNull ConfigurationSection section, String path, int def, int min, int max) {
+    public int getIntWithValidation(@NotNull ConfigurationSection section, String path, int def, int min, int max) {
 
         if (!section.isInt(path)) {
 
@@ -293,7 +313,7 @@ public class ConfigManager {
 
     }
 
-    private double getDoubleWithValidation(String path, double def, double min, double max) {
+    public double getDoubleWithValidation(String path, double def, double min, double max) {
 
         if (!config.isDouble(path) && !config.isInt(path)) {
 
@@ -314,7 +334,7 @@ public class ConfigManager {
 
     }
 
-    private double getDoubleWithValidation(@NotNull ConfigurationSection section, String path, double def, double min, double max) {
+    public double getDoubleWithValidation(@NotNull ConfigurationSection section, String path, double def, double min, double max) {
 
         if (!section.isDouble(path) && !section.isInt(path)) {
 
@@ -336,62 +356,51 @@ public class ConfigManager {
 
     }
 
-    public boolean getBoolean(String key) {
+    public float getFloatWithValidation(String path, float def, float min, float max) {
 
-        Object value = cachedValues.get(key);
+        if (!config.isDouble(path) && !config.isInt(path)) {
 
-        if (value instanceof Boolean) {
-            return (Boolean) value;
+            plugin.getLogger().warning("Значение для " + path + " не является числом. Используется значение по умолчанию: " + def);
+            return def;
+
         }
 
-        plugin.getLogger().warning("Ключ '" + key + "' не является boolean. Получено: " + (value != null ? value.getClass() : "null"));
-        return false;
+        double value = config.getDouble(path, def);
+        if (value < min || value > max) {
+
+            plugin.getLogger().warning("Значение для " + path + " (" + value + ") выходит за пределы допустимого диапазона [" + min + ", " + max + "]. Используется значение по умолчанию: " + def);
+            return def;
+
+        }
+
+        return (float) value;
 
     }
 
-    public int getInt(String key) {
+    public float getFloatWithValidation(@NotNull ConfigurationSection section, String path, float def, float min, float max) {
 
-        Object value = cachedValues.get(key);
+        if (!section.isDouble(path) && !section.isInt(path)) {
 
-        if (value instanceof Integer) {
-            return (Integer) value;
-        }
-
-        plugin.getLogger().warning("Ключ '" + key + "' не является int. Получено: " + (value != null ? value.getClass() : "null"));
-        return 0;
-
-    }
-
-    public String getString(String key) {
-
-        Object value = cachedValues.get(key);
-        return value != null ? value.toString() : "";
-
-    }
-
-    public float getFloat(String key) {
-
-        Object value = cachedValues.get(key);
-        if (value instanceof Double d) {
-            return d.floatValue();
-        } else if (value instanceof Float f) {
-            return f;
-        } else {
-
-            plugin.getLogger().warning("Ключ '" + key + "' не является числом с плавающей точкой");
-            return 0.0f;
+            plugin.getLogger().warning("Значение для " + path + " в секции не является числом. Используется значение по умолчанию: " + def);
+            return def;
 
         }
+
+        double value = section.getDouble(path, def);
+        if (value < min || value > max) {
+
+            plugin.getLogger().warning("Значение для " + path + " в секции (" + value + ") выходит за пределы допустимого диапазона [" + min + ", " + max + "]. Используется значение по умолчанию: " + def);
+            return def;
+
+        }
+
+        return (float) value;
+
     }
 
     @SuppressWarnings("unchecked")
     public List<Announcement> getAnnouncements() {
         return (List<Announcement>) cachedValues.get(ANNOUNCES_MESSAGES);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T get(String key) {
-        return (T) cachedValues.get(key);
     }
 
     public void reload() {
@@ -406,7 +415,7 @@ public class ConfigManager {
     public record Announcement(String messageFormat, String hoverText, ClickEvent.Action clickAction, String clickValue,
                                String title, String subtitle, int fadeIn, int stay, int fadeOut, String soundName,
                                float soundVolume, float soundPitch, String bossBarText, BarColor bossBarColor,
-                               BarStyle bossBarStyle, int duration, boolean progressDecay) {
+                               BarStyle bossBarStyle, int duration, boolean progressDecay, boolean bossBarEnabled,
+                               boolean soundEnabled, boolean titleEnabled, boolean messageEnabled) {}
 
-    }
 }

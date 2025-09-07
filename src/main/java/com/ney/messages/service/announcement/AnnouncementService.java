@@ -5,7 +5,7 @@ import com.ney.messages.config.ConfigManager;
 import com.ney.messages.service.BossBarService;
 import com.ney.messages.service.SoundService;
 import com.ney.messages.service.TitleService;
-import net.md_5.bungee.api.ChatColor;
+import com.ney.messages.util.HexColorUtil;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -37,7 +37,8 @@ public class AnnouncementService {
 
     public void runAnnouncement() {
 
-        if (!configManager.getBoolean(ConfigKeys.ANNOUNCES_ENABLED)) return;
+        if (!configManager.getBooleanWithValidation(ConfigKeys.ANNOUNCES_ENABLED, false))
+            return;
 
         List<ConfigManager.Announcement> announcements = configManager.getAnnouncements();
         if (announcements.isEmpty()) {
@@ -47,56 +48,58 @@ public class AnnouncementService {
 
         }
 
-        ConfigManager.Announcement announcement;
-        if (configManager.getBoolean(ConfigKeys.ANNOUNCES_RANDOM)) {
-            announcement = announcements.get(random.nextInt(announcements.size()));
-        } else {
+        ConfigManager.Announcement announcement = configManager.getBooleanWithValidation(ConfigKeys.ANNOUNCES_RANDOM,
+                false) ? announcements.get(random.nextInt(announcements.size()))
+                : announcements.get(currentIndex++ % announcements.size());
 
-            announcement = announcements.get(currentIndex);
-            currentIndex = (currentIndex + 1) % announcements.size();
-
+        BaseComponent[] component = null;
+        if (announcement.messageEnabled() && !announcement.messageFormat().isEmpty()) {
+            component = createComponent(announcement);
         }
 
-        if (!announcement.messageFormat().isEmpty()) {
-            BaseComponent[] component = createComponent(announcement);
-            for (Player player : Bukkit.getOnlinePlayers()) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+
+            if (component != null) {
                 player.spigot().sendMessage(component);
             }
-        }
 
-        if (!announcement.title().isEmpty() || !announcement.subtitle().isEmpty()) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                titleService.sendTitle(player, announcement.title(), announcement.subtitle(),
-                        announcement.fadeIn(), announcement.stay(), announcement.fadeOut());
+            if ((announcement.titleEnabled() && !announcement.title().isEmpty()) || !announcement.subtitle().isEmpty()) {
+
+                titleService.sendTitle(player, HexColorUtil.color(announcement.title()),
+                        HexColorUtil.color(announcement.subtitle()), announcement.fadeIn(),
+                        announcement.stay(), announcement.fadeOut()
+                );
+
             }
-        }
 
-        if (!announcement.soundName().isEmpty()) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
+            if (announcement.soundEnabled() && !announcement.soundName().isEmpty()) {
+
                 soundService.playSound(player, announcement.soundName(),
-                        announcement.soundVolume(), announcement.soundPitch());
-            }
-        }
+                        announcement.soundVolume(), announcement.soundPitch()
+                );
 
-        if (!announcement.bossBarText().isEmpty()) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                bossBarService.showBossBar(player, announcement.bossBarText(),
-                        announcement.bossBarColor(), announcement.bossBarStyle(),
-                        announcement.duration(), announcement.progressDecay());
             }
+
+            if (announcement.bossBarEnabled() && !announcement.bossBarText().isEmpty()) {
+
+                bossBarService.showBossBar(player, HexColorUtil.color(announcement.bossBarText()),
+                        announcement.bossBarColor(), announcement.bossBarStyle(),
+                        announcement.duration(), announcement.progressDecay()
+                );
+
+            }
+
         }
     }
 
     private BaseComponent @NotNull [] createComponent(ConfigManager.@NotNull Announcement announcement) {
 
-        TextComponent component = new TextComponent(
-                ChatColor.translateAlternateColorCodes('&', announcement.messageFormat())
-        );
+        TextComponent component = new TextComponent(HexColorUtil.color(announcement.messageFormat()));
 
         if (!announcement.hoverText().isEmpty()) {
             component.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(
                     net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT,
-                    new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', announcement.hoverText())).create()
+                    new ComponentBuilder(HexColorUtil.color(announcement.hoverText())).create()
             ));
         }
 

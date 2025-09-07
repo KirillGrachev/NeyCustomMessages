@@ -1,5 +1,6 @@
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\event\JoinMessageService.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\util\HexColorUtil.java
+C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\util\Lazy.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\listener\PlayerJoinListener.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\event\EventDispatcher.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\listener\PlayerDeathListener.java
@@ -11,7 +12,9 @@ C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\servi
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\config\ConfigManager.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\NeyCustomMessages.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\event\QuitMessageService.java
+C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\player\impl\EventConfig.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\announcement\AnnouncementService.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\listener\PlayerQuitListener.java
+C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\player\AbstractPlayerEventService.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\ServiceManager.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\SoundService.java
