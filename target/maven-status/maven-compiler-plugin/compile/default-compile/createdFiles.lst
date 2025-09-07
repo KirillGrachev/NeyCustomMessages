@@ -9,9 +9,12 @@ com\ney\messages\listener\PlayerJoinListener.class
 com\ney\messages\listener\PlayerQuitListener.class
 com\ney\messages\service\event\QuitMessageService.class
 com\ney\messages\service\announcement\AnnouncementService.class
+com\ney\messages\service\player\impl\EventConfig.class
 com\ney\messages\service\ServiceManager.class
 com\ney\messages\service\TitleService.class
 com\ney\messages\service\BossBarService.class
+com\ney\messages\service\player\AbstractPlayerEventService.class
+com\ney\messages\util\Lazy.class
 com\ney\messages\service\announcement\AnnouncementService$1.class
 com\ney\messages\service\event\DeathMessageService.class
 com\ney\messages\service\event\JoinMessageService.class

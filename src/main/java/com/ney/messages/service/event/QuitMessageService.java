@@ -4,65 +4,35 @@ import com.ney.messages.config.ConfigKeys;
 import com.ney.messages.config.ConfigManager;
 import com.ney.messages.service.SoundService;
 import com.ney.messages.service.TitleService;
-import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
+import com.ney.messages.service.player.AbstractPlayerEventService;
+import com.ney.messages.service.player.impl.EventConfig;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.jetbrains.annotations.NotNull;
 
-public class QuitMessageService {
+public class QuitMessageService extends AbstractPlayerEventService {
 
-    private final ConfigManager configManager;
-    private final TitleService titleService;
-    private final SoundService soundService;
+    private static final EventConfig CONFIG = new EventConfig(ConfigKeys.QUIT_ENABLED,
+            ConfigKeys.QUIT_MESSAGE_ENABLED, ConfigKeys.QUIT_MESSAGE_FORMAT,
+            ConfigKeys.QUIT_TITLE_ENABLED, ConfigKeys.QUIT_TITLE_TITLE,
+            ConfigKeys.QUIT_TITLE_SUBTITLE, ConfigKeys.QUIT_TITLE_FADE_IN,
+            ConfigKeys.QUIT_TITLE_STAY, ConfigKeys.QUIT_TITLE_FADE_OUT,
+            ConfigKeys.QUIT_SOUND_ENABLED, ConfigKeys.QUIT_SOUND_NAME,
+            ConfigKeys.QUIT_SOUND_VOLUME, ConfigKeys.QUIT_SOUND_PITCH
+    );
 
     public QuitMessageService(ConfigManager configManager,
                               TitleService titleService,
                               SoundService soundService) {
-        this.configManager = configManager;
-        this.titleService = titleService;
-        this.soundService = soundService;
+        super(configManager, titleService, soundService);
     }
 
-    public void handleQuit(PlayerQuitEvent event) {
-
-        if (!configManager.getBoolean(ConfigKeys.QUIT_ENABLED)) return;
+    public void handleQuit(@NotNull PlayerQuitEvent event) {
 
         Player player = event.getPlayer();
-        String playerName = player.getName();
         event.setQuitMessage(null);
 
-        if (configManager.getBoolean(ConfigKeys.QUIT_MESSAGE_ENABLED)) {
+        handle(player, player.getName(), CONFIG, null);
 
-            String msg = configManager.getString(ConfigKeys.QUIT_MESSAGE_FORMAT)
-                    .replace("{player}", playerName);
-
-            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', msg));
-
-        }
-
-        if (configManager.getBoolean(ConfigKeys.QUIT_TITLE_ENABLED)) {
-
-            String title = configManager.getString(ConfigKeys.QUIT_TITLE_TITLE);
-            String subtitle = configManager.getString(ConfigKeys.QUIT_TITLE_SUBTITLE)
-                    .replace("{player}", playerName);
-
-            int fadeIn = configManager.getInt(ConfigKeys.QUIT_TITLE_FADE_IN);
-            int stay = configManager.getInt(ConfigKeys.QUIT_TITLE_STAY);
-            int fadeOut = configManager.getInt(ConfigKeys.QUIT_TITLE_FADE_OUT);
-
-            titleService.sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
-
-        }
-
-        if (configManager.getBoolean(ConfigKeys.QUIT_SOUND_ENABLED)) {
-
-            String soundName = configManager.getString(ConfigKeys.QUIT_SOUND_NAME);
-
-            float volume = configManager.getFloat(ConfigKeys.QUIT_SOUND_VOLUME);
-            float pitch = configManager.getFloat(ConfigKeys.QUIT_SOUND_PITCH);
-
-            soundService.playSound(player, soundName, volume, pitch);
-
-        }
     }
 }

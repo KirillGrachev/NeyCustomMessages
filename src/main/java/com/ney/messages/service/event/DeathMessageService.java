@@ -5,74 +5,45 @@ import com.ney.messages.config.ConfigKeys;
 import com.ney.messages.config.ConfigManager;
 import com.ney.messages.service.SoundService;
 import com.ney.messages.service.TitleService;
-import net.md_5.bungee.api.ChatColor;
+import com.ney.messages.service.player.AbstractPlayerEventService;
+import com.ney.messages.service.player.impl.EventConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.jetbrains.annotations.NotNull;
 
-public class DeathMessageService {
+public class DeathMessageService extends AbstractPlayerEventService {
 
-    private final ConfigManager configManager;
-    private final TitleService titleService;
-    private final SoundService soundService;
-    private final NeyCustomMessages neyCustomMessages;
+    private static final EventConfig CONFIG = new EventConfig(ConfigKeys.DEATH_ENABLED,
+            ConfigKeys.DEATH_MESSAGE_ENABLED, ConfigKeys.DEATH_MESSAGE_FORMAT,
+            ConfigKeys.DEATH_TITLE_ENABLED, ConfigKeys.DEATH_TITLE_TITLE,
+            ConfigKeys.DEATH_TITLE_SUBTITLE, ConfigKeys.DEATH_TITLE_FADE_IN,
+            ConfigKeys.DEATH_TITLE_STAY, ConfigKeys.DEATH_TITLE_FADE_OUT,
+            ConfigKeys.DEATH_SOUND_ENABLED, ConfigKeys.DEATH_SOUND_NAME,
+            ConfigKeys.DEATH_SOUND_VOLUME, ConfigKeys.DEATH_SOUND_PITCH
+    );
 
-    public DeathMessageService(NeyCustomMessages neyCustomMessages,
+    private final NeyCustomMessages plugin;
+
+    public DeathMessageService(NeyCustomMessages plugin,
                                ConfigManager configManager,
                                TitleService titleService,
                                SoundService soundService) {
-        this.neyCustomMessages = neyCustomMessages;
-        this.configManager = configManager;
-        this.titleService = titleService;
-        this.soundService = soundService;
+        super(configManager, titleService, soundService);
+        this.plugin = plugin;
     }
 
-    public void handleDeath(PlayerDeathEvent event) {
-
-        if (!configManager.getBoolean(ConfigKeys.DEATH_ENABLED)) return;
+    public void handleDeath(@NotNull PlayerDeathEvent event) {
 
         Player player = event.getEntity();
-        String playerName = player.getName();
-        String deathCause = event.getDeathMessage() != null ? event.getDeathMessage() : "неизвестно";
+        String deathCause = event.getDeathMessage() != null
+                ? event.getDeathMessage() : "неизвестно";
 
         event.setDeathMessage(null);
 
-        if (configManager.getBoolean(ConfigKeys.DEATH_MESSAGE_ENABLED)) {
+        handle(player, player.getName(), CONFIG, deathCause);
 
-            String msg = configManager.getString(ConfigKeys.DEATH_MESSAGE_FORMAT)
-                    .replace("{player}", playerName)
-                    .replace("{death_cause}", deathCause);
-
-            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', msg));
-
-        }
-
-        if (configManager.getBoolean(ConfigKeys.DEATH_TITLE_ENABLED)) {
-
-            String title = configManager.getString(ConfigKeys.DEATH_TITLE_TITLE);
-            String subtitle = configManager.getString(ConfigKeys.DEATH_TITLE_SUBTITLE)
-                    .replace("{death_cause}", deathCause);
-
-            int fadeIn = configManager.getInt(ConfigKeys.DEATH_TITLE_FADE_IN);
-            int stay = configManager.getInt(ConfigKeys.DEATH_TITLE_STAY);
-            int fadeOut = configManager.getInt(ConfigKeys.DEATH_TITLE_FADE_OUT);
-
-            titleService.sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
-
-        }
-
-        if (configManager.getBoolean(ConfigKeys.DEATH_SOUND_ENABLED)) {
-
-            String soundName = configManager.getString(ConfigKeys.DEATH_SOUND_NAME);
-
-            float volume = configManager.getFloat(ConfigKeys.DEATH_SOUND_VOLUME);
-            float pitch = configManager.getFloat(ConfigKeys.DEATH_SOUND_PITCH);
-
-            soundService.playSound(player, soundName, volume, pitch);
-
-        }
-
-        Bukkit.getScheduler().runTaskLater(neyCustomMessages, () -> {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
 
             if (player.isDead()) {
                 player.spigot().respawn();

@@ -30,9 +30,10 @@ public final class NeyCustomMessages extends JavaPlugin {
                 new PlayerQuitListener(serviceManager.getQuitMessageService())
         );
 
-        if (configManager.getBoolean(ConfigKeys.ANNOUNCES_ENABLED)) {
+        if (configManager.getBooleanWithValidation(ConfigKeys.ANNOUNCES_ENABLED, false)) {
 
-            int interval = configManager.getInt(ConfigKeys.ANNOUNCES_INTERVAL) * 20;
+            int interval = configManager.getIntWithValidation(ConfigKeys.ANNOUNCES_INTERVAL,
+                    60, 0, 100) * 20;
 
             announceTask = new AnnounceTask(serviceManager.getAnnouncementService());
             announceTask.runTaskTimer(this, 0L, interval);
