@@ -1,15 +1,16 @@
 package com.ney.messages.listener;
 
-import com.ney.messages.service.event.JoinMessageService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import com.ney.messages.service.interfaces.IJoinMessageService;
+
 public class PlayerJoinListener implements Listener {
 
-    private final JoinMessageService joinMessageService;
+    private final IJoinMessageService joinMessageService;
 
-    public PlayerJoinListener(JoinMessageService joinMessageService) {
+    public PlayerJoinListener(IJoinMessageService joinMessageService) {
         this.joinMessageService = joinMessageService;
     }
 

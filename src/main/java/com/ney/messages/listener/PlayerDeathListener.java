@@ -1,15 +1,16 @@
 package com.ney.messages.listener;
 
-import com.ney.messages.service.event.DeathMessageService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
+import com.ney.messages.service.interfaces.IDeathMessageService;
+
 public class PlayerDeathListener implements Listener {
 
-    private final DeathMessageService deathMessageService;
+    private final IDeathMessageService deathMessageService;
 
-    public PlayerDeathListener(DeathMessageService deathMessageService) {
+    public PlayerDeathListener(IDeathMessageService deathMessageService) {
         this.deathMessageService = deathMessageService;
     }
 

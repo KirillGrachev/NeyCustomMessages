@@ -1,18 +1,24 @@
 package com.ney.messages.task;
 
-import com.ney.messages.service.announcement.AnnouncementService;
+import com.ney.messages.service.interfaces.IAnnouncementService;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class AnnounceTask extends BukkitRunnable {
 
-    private final AnnouncementService announcementService;
+    private final IAnnouncementService announcementService;
 
-    public AnnounceTask(AnnouncementService announcementService) {
+    public AnnounceTask(IAnnouncementService announcementService) {
         this.announcementService = announcementService;
     }
 
     @Override
     public void run() {
-        announcementService.runAnnouncement();
+
+        try {
+            announcementService.runAnnouncement();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
