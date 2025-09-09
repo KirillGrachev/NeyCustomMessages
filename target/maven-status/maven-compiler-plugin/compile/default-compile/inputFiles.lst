@@ -7,6 +7,7 @@ C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\confi
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\util\LoggerHelper.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\config\parser\ConfigParser.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\interfaces\IJoinMessageService.java
+C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\command\CommandManager.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\config\loader\ConfigLoader.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\task\AnnounceTask.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\impl\SoundServiceImpl.java
@@ -20,6 +21,7 @@ C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\confi
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\interfaces\IBossBarService.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\service\interfaces\IDeathMessageService.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\config\keys\ConfigKeys.java
+C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\config\parser\CommandConfigParser.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\util\HexColorUtil.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\listener\PlayerDeathListener.java
 C:\Users\Ney\IdeaProjects\NeyCustomMessages\src\main\java\com\ney\messages\di\ServiceContainer.java

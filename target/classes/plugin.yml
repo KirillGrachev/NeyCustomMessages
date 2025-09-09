@@ -1,5 +1,5 @@
 name: NeyCustomMessages
-version: '1.0.3-REFACTOR'
+version: '1.0.4'
 main: com.ney.messages.NeyCustomMessages
 api-version: '1.13'
 author: Ney

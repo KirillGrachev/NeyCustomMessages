@@ -6,8 +6,10 @@ com\ney\messages\service\impl\JoinMessageServiceImpl.class
 com\ney\messages\listener\PlayerJoinListener.class
 com\ney\messages\service\interfaces\ISoundService.class
 com\ney\messages\config\loader\ConfigLoader.class
+com\ney\messages\config\parser\CommandConfigParser.class
 com\ney\messages\service\impl\QuitMessageServiceImpl.class
 com\ney\messages\config\validation\ConfigValidator.class
+com\ney\messages\config\parser\CommandConfigParser$SubCommandConfig.class
 com\ney\messages\config\keys\ConfigKeys$Join.class
 com\ney\messages\service\impl\SoundServiceImpl.class
 com\ney\messages\event\EventDispatcher.class
@@ -38,11 +40,13 @@ com\ney\messages\config\keys\ConfigKeys$Announcements.class
 com\ney\messages\listener\PlayerQuitListener.class
 com\ney\messages\config\TitleConfig.class
 com\ney\messages\service\interfaces\IQuitMessageService.class
+com\ney\messages\command\CommandManager.class
 com\ney\messages\config\keys\ConfigKeys.class
 com\ney\messages\config\provider\ReloadableConfigProvider.class
 com\ney\messages\config\keys\ConfigKeys$Join$Sound.class
 com\ney\messages\config\keys\ConfigKeys$Announcements$Title.class
 com\ney\messages\util\HexColorUtil.class
+com\ney\messages\config\parser\CommandConfigParser$CommandConfig.class
 com\ney\messages\config\keys\ConfigKeys$Quit$Sound.class
 com\ney\messages\config\AnnouncementConfig.class
 com\ney\messages\config\keys\ConfigKeys$Quit$Title.class
