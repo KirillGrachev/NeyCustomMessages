@@ -93,8 +93,8 @@ public final class NeyCustomMessages extends JavaPlugin {
 
         this.commandManager = new CommandManager(this);
 
-        this.getCommand("ncm").setExecutor(this.commandManager);
-        this.getCommand("ncm").setTabCompleter(this.commandManager);
+        this.getCommand("ncm").setExecutor(commandManager);
+        this.getCommand("ncm").setTabCompleter(commandManager);
 
         this.loggerHelper.info("Main", "Plugin enabled successfully!");
 
