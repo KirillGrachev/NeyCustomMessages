@@ -2,4 +2,9 @@ name: NeyCustomMessages
 version: '${project.version}'
 main: com.ney.messages.NeyCustomMessages
 api-version: '1.13'
-load: STARTUP
+author: Ney
+description: Custom messages for join, quit, death and announcements
+commands:
+  ncm:
+    description: Reload the plugin configuration
+    usage: /<command> reload
