@@ -1,7 +1,6 @@
 package com.ney.messages.command;
 
 import com.ney.messages.NeyCustomMessages;
-import com.ney.messages.command.sub.MessageSubCommand;
 import com.ney.messages.command.sub.SubCommand;
 import com.ney.messages.command.sub.SubCommandFactory;
 import com.ney.messages.config.parser.CommandConfigParser;
@@ -60,14 +59,8 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         }
 
         SubCommand subCommand = subCommandFactory.getCommand(subCommandName);
-        if (subCommand != null) {
-            return subCommand.execute(sender, subConfig);
-        } else {
+        return subCommand.execute(sender, subConfig);
 
-            MessageSubCommand defaultMessageCommand = new MessageSubCommand();
-            return defaultMessageCommand.execute(sender, subConfig);
-
-        }
     }
 
     @Nullable

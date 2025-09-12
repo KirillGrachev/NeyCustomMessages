@@ -1,7 +1,6 @@
 package com.ney.messages.command.sub;
 
 import com.ney.messages.NeyCustomMessages;
-import com.ney.messages.util.LoggerHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,11 +8,14 @@ import java.util.Map;
 public class SubCommandFactory {
 
     private final Map<String, SubCommand> commandRegistry = new HashMap<>();
+    private final SubCommand fallbackCommand;
 
     public SubCommandFactory(NeyCustomMessages plugin) {
 
         registerCommand(new ReloadSubCommand(plugin));
         registerCommand(new MessageSubCommand());
+
+        this.fallbackCommand = new MessageSubCommand();
 
     }
 
@@ -22,6 +24,6 @@ public class SubCommandFactory {
     }
 
     public SubCommand getCommand(String actionKey) {
-        return commandRegistry.get(actionKey);
+        return commandRegistry.getOrDefault(actionKey, fallbackCommand);
     }
 }
