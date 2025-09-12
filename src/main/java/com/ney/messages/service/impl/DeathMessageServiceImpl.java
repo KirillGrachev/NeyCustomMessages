@@ -1,5 +1,6 @@
 package com.ney.messages.service.impl;
 
+import com.ney.messages.NeyCustomMessages;
 import com.ney.messages.config.DeathConfig;
 import com.ney.messages.service.interfaces.IDeathMessageService;
 import com.ney.messages.service.strategy.context.NotificationContext;
@@ -14,11 +15,14 @@ public class DeathMessageServiceImpl implements IDeathMessageService {
 
     private final DeathConfig config;
     private final List<NotificationStrategy> strategies;
+    private final NeyCustomMessages plugin;
 
     public DeathMessageServiceImpl(DeathConfig config,
-                                   List<NotificationStrategy> strategies) {
+                                   List<NotificationStrategy> strategies,
+                                   NeyCustomMessages plugin) {
         this.config = config;
         this.strategies = strategies;
+        this.plugin = plugin;
     }
 
     @Override
@@ -39,7 +43,7 @@ public class DeathMessageServiceImpl implements IDeathMessageService {
 
         for (NotificationStrategy strategy : strategies) strategy.execute(context);
 
-        Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("NeyCustomMessages"),
+        Bukkit.getScheduler().runTaskLater(plugin,
                 () -> {
                     if (player.isDead()) {
                         player.spigot().respawn();

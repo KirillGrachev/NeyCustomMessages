@@ -4,6 +4,7 @@ import com.ney.messages.NeyCustomMessages;
 import com.ney.messages.service.interfaces.IAnnouncementService;
 import com.ney.messages.util.LoggerHelper;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
 
@@ -12,7 +13,7 @@ public class AnnounceTask extends BukkitRunnable {
     private final IAnnouncementService announcementService;
     private final LoggerHelper loggerHelper;
 
-    public AnnounceTask(NeyCustomMessages plugin,
+    public AnnounceTask(@NotNull NeyCustomMessages plugin,
                         IAnnouncementService announcementService) {
         this.announcementService = announcementService;
         this.loggerHelper = plugin.getLoggerHelper();
@@ -24,7 +25,7 @@ public class AnnounceTask extends BukkitRunnable {
         try {
             announcementService.runAnnouncement();
         } catch (Exception e) {
-           e.printStackTrace();
+            loggerHelper.error("AnnounceTask", e, "Failed to run announcement");
         }
 
     }
