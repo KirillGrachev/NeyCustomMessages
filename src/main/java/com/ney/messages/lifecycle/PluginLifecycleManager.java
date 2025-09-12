@@ -135,7 +135,9 @@ public class PluginLifecycleManager {
         container.bind(IAnnouncementService.class,
                 new AnnouncementServiceImpl(config.announcements(), scheduler, broadcaster, loggerHelper));
 
-        container.bind(IDeathMessageService.class, new DeathMessageServiceImpl(config.death(), strategies));
+        container.bind(IDeathMessageService.class, new DeathMessageServiceImpl(config.death(), strategies,
+                plugin));
+
         container.bind(IJoinMessageService.class, new JoinMessageServiceImpl(config.join(), strategies));
         container.bind(IQuitMessageService.class, new QuitMessageServiceImpl(config.quit(), strategies));
 
