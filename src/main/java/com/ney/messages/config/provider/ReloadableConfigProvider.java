@@ -1,33 +1,34 @@
 package com.ney.messages.config.provider;
 
+import com.ney.messages.NeyCustomMessages;
 import com.ney.messages.config.MainConfig;
 import com.ney.messages.config.loader.ConfigLoader;
 import com.ney.messages.config.parser.ConfigParser;
 import com.ney.messages.config.validation.ConfigValidator;
 import com.ney.messages.config.validation.exceptions.ConfigValidationException;
-import org.bukkit.plugin.java.JavaPlugin;
+import com.ney.messages.util.LoggerHelper;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 
 public class ReloadableConfigProvider implements ConfigProvider {
 
     private final ConfigLoader configLoader;
     private final ConfigParser configParser;
     private final ConfigValidator configValidator;
-    private final JavaPlugin plugin;
+
+    private final LoggerHelper loggerHelper;
 
     private final AtomicReference<MainConfig> currentConfig = new AtomicReference<>();
 
     public ReloadableConfigProvider(ConfigLoader configLoader,
                                     ConfigParser configParser,
-                                    JavaPlugin plugin) {
-
+                                    @NotNull NeyCustomMessages plugin) {
         this.configLoader = configLoader;
         this.configParser = configParser;
         this.configValidator = new ConfigValidator();
-        this.plugin = plugin;
-
+        this.loggerHelper = plugin.getLoggerHelper();
     }
 
     @Override
@@ -36,31 +37,27 @@ public class ReloadableConfigProvider implements ConfigProvider {
     }
 
     @Override
-    public synchronized void reload() throws Exception {
+    public synchronized void reload() {
 
         try {
 
-            var rawConfig = configLoader.load();
-
+            FileConfiguration rawConfig = configLoader.load();
             MainConfig parsedConfig = configParser.parse(rawConfig);
 
             configValidator.validate(parsedConfig);
             currentConfig.set(parsedConfig);
 
-            plugin.getLogger().info("Configuration successfully reloaded and validated.");
+            loggerHelper.info("Config", "Configuration successfully reloaded and validated.");
 
         } catch (ConfigValidationException e) {
 
-            plugin.getLogger().log(Level.SEVERE, "Configuration validation failed:");
-            for (String error : e.getErrors()) plugin.getLogger().severe(" - " + error);
-
-            throw e;
+            loggerHelper.error("Config", e, "Configuration validation failed:");
+            for (String error : e.getErrors()) {
+                loggerHelper.error("Config", e, " - %s", error);
+            }
 
         } catch (Exception e) {
-
-            plugin.getLogger().log(Level.SEVERE, "Failed to reload configuration", e);
-            throw e;
-
+            loggerHelper.error("Config", e,"Failed to reload configuration");
         }
     }
 }

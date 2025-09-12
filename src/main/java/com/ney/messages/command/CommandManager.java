@@ -1,6 +1,9 @@
 package com.ney.messages.command;
 
 import com.ney.messages.NeyCustomMessages;
+import com.ney.messages.command.sub.MessageSubCommand;
+import com.ney.messages.command.sub.SubCommand;
+import com.ney.messages.command.sub.SubCommandFactory;
 import com.ney.messages.config.parser.CommandConfigParser;
 import com.ney.messages.util.HexColorUtil;
 import org.bukkit.command.Command;
@@ -18,21 +21,19 @@ import java.util.Map;
 
 public class CommandManager implements CommandExecutor, TabCompleter {
 
-    private final NeyCustomMessages plugin;
     private final Map<String, CommandConfigParser.CommandConfig> commands;
+    private final SubCommandFactory subCommandFactory;
 
     public CommandManager(@NotNull NeyCustomMessages plugin) {
-        this.plugin = plugin;
         this.commands = CommandConfigParser.parse(plugin.getConfig());
+        this.subCommandFactory = new SubCommandFactory(plugin);
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
                              @NotNull String label, @NotNull String[] args) {
 
-        CommandConfigParser.CommandConfig cmdConfig = commands.get(command.getName()
-                .toLowerCase());
-
+        CommandConfigParser.CommandConfig cmdConfig = commands.get(command.getName().toLowerCase());
         if (cmdConfig == null) return false;
 
         if (args.length == 0) {
@@ -42,8 +43,8 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
         }
 
-        String sub = args[0].toLowerCase();
-        CommandConfigParser.SubCommandConfig subConfig = cmdConfig.subcommands().get(sub);
+        String subCommandName = args[0].toLowerCase();
+        CommandConfigParser.SubCommandConfig subConfig = cmdConfig.subcommands().get(subCommandName);
         if (subConfig == null) {
 
             sender.sendMessage(HexColorUtil.color(cmdConfig.usage()));
@@ -58,27 +59,19 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
         }
 
-        if (sub.equals("reload")) {
+        SubCommand subCommand = subCommandFactory.getCommand(subCommandName);
+        if (subCommand != null) {
+            return subCommand.execute(sender, subConfig);
+        } else {
 
-            plugin.reloadPlugin();
-
-            sender.sendMessage(HexColorUtil.color(subConfig.messageSuccess()));
-            plugin.getLoggerHelper().info("Command", "Configuration reloaded by %s",
-                    sender.getName());
-
-            return true;
+            MessageSubCommand defaultMessageCommand = new MessageSubCommand();
+            return defaultMessageCommand.execute(sender, subConfig);
 
         }
-
-        if (!subConfig.message().isEmpty()) {
-            sender.sendMessage(HexColorUtil.color(subConfig.message()));
-        }
-
-        return true;
-
     }
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,
                                       @NotNull Command command,
                                       @NotNull String alias,
@@ -91,16 +84,17 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
             List<String> completions = new ArrayList<>();
 
-            for (Map.Entry<String, CommandConfigParser.SubCommandConfig> entry
-                    : cmdConfig.subcommands().entrySet()) {
+            for (Map.Entry<String, CommandConfigParser.SubCommandConfig> entry : cmdConfig.subcommands().entrySet()) {
 
-                String sub = entry.getKey();
-                CommandConfigParser.SubCommandConfig subCfg = entry.getValue();
+                String subCmdName = entry.getKey();
+                CommandConfigParser.SubCommandConfig subCmd = entry.getValue();
 
-                if (!subCfg.permission().isEmpty()
-                        && !sender.hasPermission(subCfg.permission())) continue;
+                String permission = subCmd.permission();
+                if (!permission.isEmpty() && !sender.hasPermission(permission)) {
+                    continue;
+                }
 
-                completions.add(sub);
+                completions.add(subCmdName);
 
             }
 
@@ -111,4 +105,4 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         return Collections.emptyList();
 
     }
- }
+}

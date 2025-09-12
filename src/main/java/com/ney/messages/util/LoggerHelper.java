@@ -38,7 +38,7 @@ public class LoggerHelper {
 
     }
 
-    private void log(Level level, String component, String message, Object... args) {
+    public void log(Level level, String component, String message, Object... args) {
 
         String formattedMessage = String.format(message, args);
         String timestamp = dateFormat.format(new Date());

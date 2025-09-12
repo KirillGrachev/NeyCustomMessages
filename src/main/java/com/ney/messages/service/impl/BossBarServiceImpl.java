@@ -1,13 +1,14 @@
 package com.ney.messages.service.impl;
 
+import com.ney.messages.NeyCustomMessages;
 import com.ney.messages.service.interfaces.IBossBarService;
 import com.ney.messages.util.HexColorUtil;
+import com.ney.messages.util.LoggerHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,22 +16,23 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class BossBarServiceImpl implements IBossBarService {
 
-    private final JavaPlugin plugin;
-    private final Logger logger;
+    private final NeyCustomMessages plugin;
+
+    private final LoggerHelper loggerHelper;
     private final Map<UUID, BossBar> activeBossBars = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitTask> bossBarTasks = new ConcurrentHashMap<>();
 
-    public BossBarServiceImpl(@NotNull JavaPlugin plugin) {
+    public BossBarServiceImpl(@NotNull NeyCustomMessages plugin) {
         this.plugin = plugin;
-        this.logger = plugin.getLogger();
+        this.loggerHelper = plugin.getLoggerHelper();
     }
 
     @Override
-    public void showBossBar(Player player, String text, BarColor color, BarStyle style, int duration, boolean progressDecay) {
+    public void showBossBar(Player player, String text, BarColor color,
+                            BarStyle style, int duration, boolean progressDecay) {
 
         if (player == null || !player.isOnline()) return;
 
@@ -122,7 +124,7 @@ public class BossBarServiceImpl implements IBossBarService {
         try {
             removeAllBossBars();
         } catch (Exception e) {
-            logger.log(Level.WARNING, "Error closing BossBarService", e);
+            loggerHelper.log(Level.WARNING, e.getMessage(), "Error closing BossBarService");
         }
 
     }

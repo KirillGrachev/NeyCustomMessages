@@ -4,5 +4,6 @@ public record JoinConfig(
         boolean enabled,
         MessageConfig message,
         TitleConfig title,
-        SoundConfig sound
+        SoundConfig sound,
+        BossBarConfig bossBar
 ) {}

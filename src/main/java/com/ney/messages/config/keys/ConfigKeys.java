@@ -29,6 +29,15 @@ public final class ConfigKeys {
             public static final String PITCH = "death.sound.pitch";
         }
 
+        public static class BossBar {
+            public static final String ENABLED = "death.bossbar.enabled";
+            public static final String TEXT = "death.bossbar.text";
+            public static final String COLOR = "death.bossbar.color";
+            public static final String STYLE = "death.bossbar.style";
+            public static final String DURATION = "death.bossbar.duration";
+            public static final String PROGRESS_DECAY = "death.bossbar.progress-decay";
+        }
+
     }
 
     public static class Join {
@@ -56,6 +65,15 @@ public final class ConfigKeys {
             public static final String PITCH = "join.sound.pitch";
         }
 
+        public static class BossBar {
+            public static final String ENABLED = "join.bossbar.enabled";
+            public static final String TEXT = "join.bossbar.text";
+            public static final String COLOR = "join.bossbar.color";
+            public static final String STYLE = "join.bossbar.style";
+            public static final String DURATION = "join.bossbar.duration";
+            public static final String PROGRESS_DECAY = "join.bossbar.progress-decay";
+        }
+
     }
 
     public static class Quit {
@@ -81,6 +99,15 @@ public final class ConfigKeys {
             public static final String NAME = "quit.sound.name";
             public static final String VOLUME = "quit.sound.volume";
             public static final String PITCH = "quit.sound.pitch";
+        }
+
+        public static class BossBar {
+            public static final String ENABLED = "quit.bossbar.enabled";
+            public static final String TEXT = "quit.bossbar.text";
+            public static final String COLOR = "quit.bossbar.color";
+            public static final String STYLE = "quit.bossbar.style";
+            public static final String DURATION = "quit.bossbar.duration";
+            public static final String PROGRESS_DECAY = "quit.bossbar.progress-decay";
         }
 
     }
