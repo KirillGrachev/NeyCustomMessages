@@ -103,17 +103,35 @@ public class PluginLifecycleManager {
 
         }
 
+        if (container != null) {
+
+            try {
+
+                IBossBarService bossBarService = container.get(IBossBarService.class);
+                if (bossBarService != null) {
+
+                    bossBarService.removeAllBossBars();
+                    loggerHelper.info("BossBar", "All boss bars removed.");
+
+                }
+
+            } catch (Exception e) {
+                loggerHelper.warn("BossBar", "Error removing boss bars during shutdown: %s", e.getMessage());
+            }
+
+        }
+
         buildContainer(configProvider.getConfig());
         loggerHelper.info("DI", "New ServiceContainer built with updated configuration.");
 
-        registerEventListeners();
         startAnnouncementTask();
-
         loggerHelper.info("Config", "Plugin reload completed successfully.");
 
     }
 
     private void buildContainer(@NotNull MainConfig config) {
+
+        container.clear();
 
         container.bind(ITitleService.class, new TitleServiceImpl());
         container.bind(ISoundService.class, new SoundServiceImpl(plugin));
