@@ -17,7 +17,7 @@ commands:
   # ─ Главная команда плагина
   ncm:
     description: "Главная команда плагина"   # Описание команды
-    usage: "/ncm [reload]"                   # Использование команды
+    usage: "&6NeyCustomMessages &7| &fИспользование: /ncm reload"                   # Использование команды
     permission: "neycustommessages.reload"   # Основное право доступа к команде
 
     # ─ Подкоманды
@@ -34,7 +34,7 @@ commands:
       help:
         description: "Список доступных команд"   # Описание
         permission: ""                           # Права (пусто = доступно всем)
-        message: "&6NeyCustomMessages &7| &fИспользование: /ncm [reload]" # Сообщение при вызове
+        message: "&6NeyCustomMessages &7| &fИспользование: /ncm reload" # Сообщение при вызове
 
 # ────────────────────────────────────────────────────────
 # | МОДУЛЬ: Игрок присоединяется к серверу (Player Join) |
@@ -97,6 +97,13 @@ quit:
     volume: 0.8
     pitch: 0.9
 
+  bossbar:
+    enabled: true  # Показывать ли босс-бар
+    text: "&aПривет, {player}!"  # Текст в босс-баре
+    color: "GREEN"       # Цвет: RED, BLUE, GREEN, YELLOW и др.
+    style: "SOLID"       # Стиль: SOLID, PROGRESS, NOTCHED_6 и др.
+    duration: 5          # Длительность показа (в секундах)
+
 # ──────────────────────────────────────────────────────
 # | МОДУЛЬ: Игрок умирает (Player Death)               |
 # ──────────────────────────────────────────────────────
@@ -121,6 +128,13 @@ death:
     name: "ENTITY_GENERIC_EXPLODE"
     volume: 1.0
     pitch: 1.2
+
+  bossbar:
+    enabled: true  # Показывать ли босс-бар
+    text: "&aПривет, {player}!"  # Текст в босс-баре
+    color: "GREEN"       # Цвет: RED, BLUE, GREEN, YELLOW и др.
+    style: "SOLID"       # Стиль: SOLID, PROGRESS, NOTCHED_6 и др.
+    duration: 5          # Длительность показа (в секундах)
 
 # ──────────────────────────────────────────────────────
 # | МОДУЛЬ: Анонсы (периодические сообщения)           |

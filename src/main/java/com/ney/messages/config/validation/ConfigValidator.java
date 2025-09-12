@@ -25,19 +25,23 @@ public class ConfigValidator {
     private void validateDeathConfig(@NotNull DeathConfig config, List<String> errors) {
         validateTitleConfig(config.title(), "death.title", errors);
         validateSoundConfig(config.sound(), "death.sound", errors);
+        validateBossBarConfig(config.bossBar(), "death.bossBar", errors);
     }
 
     private void validateJoinConfig(@NotNull JoinConfig config, List<String> errors) {
         validateTitleConfig(config.title(), "join.title", errors);
         validateSoundConfig(config.sound(), "join.sound", errors);
+        validateBossBarConfig(config.bossBar(), "join.bossBar", errors);
     }
 
     private void validateQuitConfig(@NotNull QuitConfig config, List<String> errors) {
         validateTitleConfig(config.title(), "quit.title", errors);
         validateSoundConfig(config.sound(), "quit.sound", errors);
+        validateBossBarConfig(config.bossBar(), "quit.bossBar", errors);
     }
 
-    private void validateAnnouncementsConfig(@NotNull AnnouncementsConfig config, List<String> errors) {
+    private void validateAnnouncementsConfig(@NotNull AnnouncementsConfig config,
+                                             List<String> errors) {
 
         if (config.enabled() && config.messages().isEmpty()) {
             errors.add("announces.enabled is true but announces.messages is empty");
@@ -53,53 +57,53 @@ public class ConfigValidator {
 
     }
 
-    private void validateAnnouncementConfig(@NotNull AnnouncementConfig config, String path,
-                                            List<String> errors) {
-
+    private void validateAnnouncementConfig(@NotNull AnnouncementConfig config,
+                                            String path, List<String> errors) {
         validateTitleConfig(config.title(), path + ".title", errors);
         validateSoundConfig(config.sound(), path + ".sound", errors);
-
-
-        if (config.bossBar().enabled()) {
-
-            if (config.bossBar().duration() <= 0) {
-                errors.add(path + ".bossbar.duration must be greater than 0");
-            }
-
-            if (config.bossBar().color() == null) {
-                errors.add(path + ".bossbar.color is invalid or missing");
-            }
-
-            if (config.bossBar().style() == null) {
-                errors.add(path + ".bossbar.style is invalid or missing");
-            }
-
-        }
-
+        validateBossBarConfig(config.bossBar(), path + ".bossBar", errors);
     }
 
-    private void validateTitleConfig(@NotNull TitleConfig config, String path, List<String> errors) {
-
+    private void validateTitleConfig(@NotNull TitleConfig config,
+                                     String path, List<String> errors) {
         if (config.enabled()) {
-
             if (config.fadeIn() < 0) errors.add(path + ".fadeIn must be >= 0");
             if (config.stay() < 0) errors.add(path + ".stay must be >= 0");
             if (config.fadeOut() < 0) errors.add(path + ".fadeOut must be >= 0");
-
         }
-
     }
 
-    private void validateSoundConfig(@NotNull SoundConfig config, String path, List<String> errors) {
-
+    private void validateSoundConfig(@NotNull SoundConfig config,
+                                     String path, List<String> errors) {
         if (config.enabled()) {
-
             if (config.volume() < 0.0f || config.volume() > 2.0f) {
                 errors.add(path + ".volume must be between 0.0 and 2.0");
             }
-
             if (config.pitch() < 0.0f || config.pitch() > 2.0f) {
                 errors.add(path + ".pitch must be between 0.0 and 2.0");
+            }
+        }
+    }
+
+    private void validateBossBarConfig(@NotNull BossBarConfig config,
+                                       String path, List<String> errors) {
+
+        if (config.enabled()) {
+
+            if (config.duration() <= 0) {
+                errors.add(path + ".duration must be greater than 0");
+            }
+
+            if (config.color() == null) {
+                errors.add(path + ".color is invalid or missing");
+            }
+
+            if (config.style() == null) {
+                errors.add(path + ".style is invalid or missing");
+            }
+
+            if (config.text() == null || config.text().isEmpty()) {
+                errors.add(path + ".text is missing or empty");
             }
 
         }

@@ -1,18 +1,20 @@
 package com.ney.messages.service.impl;
 
+import com.ney.messages.NeyCustomMessages;
 import com.ney.messages.service.interfaces.ISoundService;
+import com.ney.messages.util.LoggerHelper;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
 
 public class SoundServiceImpl implements ISoundService {
 
-    private final JavaPlugin plugin;
+    private final LoggerHelper loggerHelper;
 
-    public SoundServiceImpl(JavaPlugin plugin) {
-        this.plugin = plugin;
+    public SoundServiceImpl(@NotNull NeyCustomMessages plugin) {
+        this.loggerHelper = plugin.getLoggerHelper();
     }
 
     @Override
@@ -29,7 +31,7 @@ public class SoundServiceImpl implements ISoundService {
             player.playSound(player.getLocation(), sound, volume, pitch);
 
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().log(Level.WARNING, "Unknown sound name: {0}", soundName);
+            loggerHelper.log(Level.WARNING, "Unknown sound name: {0}", soundName);
         }
     }
 }

@@ -53,7 +53,17 @@ public class MainConfigParser implements ConfigParser {
                 (float) config.getDouble(Death.Sound.PITCH, 1.0)
         );
 
-        return new DeathConfig(enabled, messageConfig, titleConfig, soundConfig);
+        BossBarConfig bossBarConfig = new BossBarConfig(
+                config.getBoolean(Death.BossBar.ENABLED, false),
+                config.getString(Death.BossBar.TEXT, "&cВы умерли!"),
+                parseBarColor(config.getString(Death.BossBar.COLOR, "RED")),
+                parseBarStyle(config.getString(Death.BossBar.STYLE, "SOLID")),
+                config.getInt(Death.BossBar.DURATION, 3),
+                config.getBoolean(Death.BossBar.PROGRESS_DECAY, false)
+        );
+
+        return new DeathConfig(enabled, messageConfig, titleConfig,
+                soundConfig, bossBarConfig);
 
     }
 
@@ -82,7 +92,17 @@ public class MainConfigParser implements ConfigParser {
                 (float) config.getDouble(Join.Sound.PITCH, 1.0)
         );
 
-        return new JoinConfig(enabled, messageConfig, titleConfig, soundConfig);
+        BossBarConfig bossBarConfig = new BossBarConfig(
+                config.getBoolean(Join.BossBar.ENABLED, false),
+                config.getString(Join.BossBar.TEXT, "&aДобро пожаловать, {player}!"),
+                parseBarColor(config.getString(Join.BossBar.COLOR, "GREEN")),
+                parseBarStyle(config.getString(Join.BossBar.STYLE, "SOLID")),
+                config.getInt(Join.BossBar.DURATION, 5),
+                config.getBoolean(Join.BossBar.PROGRESS_DECAY, false)
+        );
+
+        return new JoinConfig(enabled, messageConfig, titleConfig,
+                soundConfig, bossBarConfig);
 
     }
 
@@ -111,7 +131,18 @@ public class MainConfigParser implements ConfigParser {
                 (float) config.getDouble(Quit.Sound.PITCH, 1.0)
         );
 
-        return new QuitConfig(enabled, messageConfig, titleConfig, soundConfig);
+        BossBarConfig bossBarConfig = new BossBarConfig(
+                config.getBoolean(Quit.BossBar.ENABLED, false),
+                config.getString(Quit.BossBar.TEXT, "&c{player} покинул сервер"),
+                parseBarColor(config.getString(Quit.BossBar.COLOR, "BLUE")),
+                parseBarStyle(config.getString(Quit.BossBar.STYLE, "SOLID")),
+                config.getInt(Quit.BossBar.DURATION, 3),
+                config.getBoolean(Quit.BossBar.PROGRESS_DECAY, false)
+        );
+
+
+        return new QuitConfig(enabled, messageConfig, titleConfig,
+                soundConfig, bossBarConfig);
 
     }
 
