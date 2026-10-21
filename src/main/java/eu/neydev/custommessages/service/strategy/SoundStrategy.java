@@ -1,12 +1,17 @@
 package eu.neydev.custommessages.service.strategy;
 
-import eu.neydev.custommessages.config.*;
+import eu.neydev.custommessages.config.type.SoundSettings;
 import eu.neydev.custommessages.service.interfaces.ISoundService;
 import eu.neydev.custommessages.service.strategy.context.NotificationContext;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+/**
+ * Стратегия доставки звука.
+ *
+ * Имя звука уже разрешено в {@link org.bukkit.Sound} при загрузке
+ * конфигурации: в 1.x valueOf падал здесь на каждую доставку при
+ * опечатке в config.yml.
+ */
 public class SoundStrategy implements NotificationStrategy {
 
     private final ISoundService soundService;
@@ -18,50 +23,19 @@ public class SoundStrategy implements NotificationStrategy {
     @Override
     public void execute(@NotNull NotificationContext context) {
 
-        Player player = context.getPlayer();
-        Object config = context.getConfig();
+        SoundSettings sound = context.getBundle().sound();
 
-        SoundConfig soundConfig = extractSoundConfig(config);
-
-        if (soundConfig == null || !soundConfig.enabled()
-                || soundConfig.name() == null
-                || soundConfig.name().isEmpty()) {
+        if (!isEnabled(context)) {
             return;
         }
 
-        soundService.playSound(
-                player,
-                soundConfig.name(),
-                soundConfig.volume(),
-                soundConfig.pitch()
-        );
+        soundService.playSound(context.getPlayer(), sound.sound(), sound.volume(), sound.pitch());
 
     }
 
     @Override
     public boolean isEnabled(@NotNull NotificationContext context) {
-
-        Object config = context.getConfig();
-        SoundConfig soundConfig = extractSoundConfig(config);
-
-        return soundConfig != null && soundConfig.enabled()
-                && soundConfig.name() != null && !soundConfig.name().isEmpty();
-
+        return context.getBundle().sound().isPlayable();
     }
 
-    private @Nullable SoundConfig extractSoundConfig(Object config) {
-
-        if (config instanceof AnnouncementConfig) {
-            return ((AnnouncementConfig) config).sound();
-        } else if (config instanceof DeathConfig) {
-            return ((DeathConfig) config).sound();
-        } else if (config instanceof JoinConfig) {
-            return ((JoinConfig) config).sound();
-        } else if (config instanceof QuitConfig) {
-            return ((QuitConfig) config).sound();
-        }
-
-        return null;
-
-    }
 }

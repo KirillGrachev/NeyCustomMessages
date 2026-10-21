@@ -1,15 +1,16 @@
 package eu.neydev.custommessages.service.strategy;
 
-import eu.neydev.custommessages.config.*;
+import eu.neydev.custommessages.config.type.BossBarSettings;
 import eu.neydev.custommessages.service.interfaces.IBossBarService;
 import eu.neydev.custommessages.service.strategy.context.NotificationContext;
-import eu.neydev.custommessages.util.HexColorUtil;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-
+/**
+ * Стратегия доставки босс-бара.
+ *
+ * Цвет и стиль уже разрешены при загрузке конфигурации; текст передается
+ * неокрашенным - сервис красит его один раз перед показом.
+ */
 public class BossBarStrategy implements NotificationStrategy {
 
     private final IBossBarService bossBarService;
@@ -21,28 +22,19 @@ public class BossBarStrategy implements NotificationStrategy {
     @Override
     public void execute(@NotNull NotificationContext context) {
 
-        Player player = context.getPlayer();
-        Object config = context.getConfig();
-        BossBarConfig bossBarConfig = extractBossBarConfig(config);
+        BossBarSettings bossBar = context.getBundle().bossBar();
 
-        if (bossBarConfig == null || !bossBarConfig.enabled()
-                || bossBarConfig.text() == null
-                || bossBarConfig.text().isEmpty()) {
+        if (!isEnabled(context)) {
             return;
         }
 
-        String text = bossBarConfig.text();
-        for (Map.Entry<String, String> entry : context.getPlaceholders().entrySet()) {
-            text = text.replace(entry.getKey(), entry.getValue());
-        }
-
         bossBarService.showBossBar(
-                player,
-                HexColorUtil.color(text),
-                bossBarConfig.color(),
-                bossBarConfig.style(),
-                bossBarConfig.duration(),
-                bossBarConfig.progressDecay()
+                context.getPlayer(),
+                context.apply(bossBar.text()),
+                bossBar.color(),
+                bossBar.style(),
+                bossBar.duration(),
+                bossBar.progressDecay()
         );
 
     }
@@ -50,28 +42,10 @@ public class BossBarStrategy implements NotificationStrategy {
     @Override
     public boolean isEnabled(@NotNull NotificationContext context) {
 
-        Object config = context.getConfig();
-        BossBarConfig bossBarConfig = extractBossBarConfig(config);
+        BossBarSettings bossBar = context.getBundle().bossBar();
 
-        return bossBarConfig != null && bossBarConfig.enabled()
-                && bossBarConfig.text() != null
-                && !bossBarConfig.text().isEmpty();
+        return bossBar.enabled() && !bossBar.text().isEmpty();
 
     }
 
-    private @Nullable BossBarConfig extractBossBarConfig(Object config) {
-
-        if (config instanceof AnnouncementConfig) {
-            return ((AnnouncementConfig) config).bossBar();
-        } else if (config instanceof DeathConfig) {
-            return ((DeathConfig) config).bossBar();
-        } else if (config instanceof JoinConfig) {
-            return ((JoinConfig) config).bossBar();
-        } else if (config instanceof QuitConfig) {
-            return ((QuitConfig) config).bossBar();
-        }
-
-        return null;
-
-    }
 }

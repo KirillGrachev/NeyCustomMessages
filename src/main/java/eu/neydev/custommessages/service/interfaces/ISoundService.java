@@ -1,20 +1,17 @@
 package eu.neydev.custommessages.service.interfaces;
 
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
-/**
- * Сервис для воспроизведения звуков игрокам.
- */
 public interface ISoundService {
 
     /**
-     * Воспроизводит звук для игрока.
+     * Проигрывает звук игроку.
      *
-     * @param player  Игрок, для которого воспроизводится звук.
-     * @param soundName Название звука (например, "ENTITY_PLAYER_LEVELUP").
-     * @param volume  Громкость звука (0.0 - 2.0).
-     * @param pitch   Высота звука (0.0 - 2.0).
+     * @param player получатель (null или оффлайн - тихо пропускается)
+     * @param sound  разрешенный звук
+     * @param volume громкость
+     * @param pitch  высота
      */
-    void playSound(Player player, String soundName, float volume, float pitch);
-
+    void playSound(Player player, Sound sound, float volume, float pitch);
 }

@@ -1,46 +1,44 @@
 package eu.neydev.custommessages.service.impl;
 
-import eu.neydev.custommessages.config.AnnouncementConfig;
-import eu.neydev.custommessages.config.AnnouncementsConfig;
+import eu.neydev.custommessages.config.CustomMessagesConfig;
+import eu.neydev.custommessages.config.type.Announcement;
 import eu.neydev.custommessages.service.impl.announcement.broadcast.AnnouncementBroadcaster;
 import eu.neydev.custommessages.service.impl.announcement.scheduler.AnnouncementScheduler;
 import eu.neydev.custommessages.service.interfaces.IAnnouncementService;
-import eu.neydev.custommessages.util.LoggerHelper;
 
 import java.util.List;
 
 public class AnnouncementServiceImpl implements IAnnouncementService {
 
-    private final AnnouncementsConfig config;
+    private final CustomMessagesConfig config;
     private final AnnouncementScheduler scheduler;
     private final AnnouncementBroadcaster broadcaster;
-    private final LoggerHelper loggerHelper;
 
-    public AnnouncementServiceImpl(AnnouncementsConfig config,
+    public AnnouncementServiceImpl(CustomMessagesConfig config,
                                    AnnouncementScheduler scheduler,
-                                   AnnouncementBroadcaster broadcaster,
-                                   LoggerHelper loggerHelper) {
+                                   AnnouncementBroadcaster broadcaster) {
         this.config = config;
         this.scheduler = scheduler;
         this.broadcaster = broadcaster;
-        this.loggerHelper = loggerHelper;
     }
 
     @Override
     public void runAnnouncement() {
 
-        if (!config.enabled()) return;
-
-        List<AnnouncementConfig> announcements = config.messages();
-        if (announcements.isEmpty()) {
-
-            loggerHelper.warn("Announcement","No announcements available to display!");
+        if (!config.isPluginEnabled() || !config.areAnnouncementsEnabled()) {
             return;
-
         }
 
-        AnnouncementConfig announcement = scheduler.selectNext(announcements, config.random());
+        List<Announcement> announcements = config.getAnnouncements();
+
+        if (announcements.isEmpty()) {
+            return;
+        }
+
+        Announcement announcement =
+                scheduler.selectNext(announcements, config.isRandomAnnouncementOrder());
         broadcaster.broadcastToAllPlayers(announcement);
 
     }
+
 }

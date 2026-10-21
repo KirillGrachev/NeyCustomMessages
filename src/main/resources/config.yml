@@ -1,166 +1,173 @@
-# _   _             _____          _                  __  __
-#| \ | |           / ____|        | |                |  \/  |
-#|  \| | ___ _   _| |    _   _ ___| |_ ___  _ __ ___ | \  / | ___  ___ ___  __ _  __ _  ___  ___
-#| . ` |/ _ \ | | | |   | | | / __| __/ _ \| '_ ` _ \| |\/| |/ _ \/ __/ __|/ _` |/ _` |/ _ \/ __|
-#| |\  |  __/ |_| | |___| |_| \__ \ || (_) | | | | | | |  | |  __/\__ \__ \ (_| | (_| |  __/\__ \
-#|_| \_|\___|\__, |\_____\__,_|___/\__\___/|_| |_| |_|_|  |_|\___||___/___/\__,_|\__, |\___||___/
-#            __/ |                                                               __/ |
-#           |___/                                                               |___/
+# NeyCustomMessages - custom join, quit and death messages plus rotating
+# announcements for every online player.
+#
+# PLACEHOLDERS - work in the module texts (chat format, title, subtitle,
+# boss bar text):
+#
+#   Modules (join, quit, death)
+#     {player}        name of the player the module fired for
+#     {death_cause}   the vanilla death message (death module only)
+#
+#   Service (info, reload)
+#     {version}       plugin version from plugin.yml
+#     {time}          reload time, ms
+#     {announcements} number of configured announcements
+#     {interval}      announcement interval, seconds
+#     {join}/{quit}/{death}/{permissions}
+#                     state_on / state_off words for the matching switches
+#     {announcements_state}  announcements.enabled as a state word
+#     {count}         number of configured announcements
+#     {mode}          random or round-robin
+#     {prefix}        messages.prefix
+#
+# Announcements are delivered as-is to everyone: they have no player
+# context, so {player} does not work inside them.
+#
+# HEX colors are supported everywhere: #RRGGBB and &#RRGGBB.
+#
+# Configs from 1.x keep working without edits: the top-level join/quit/death
+# sections are read when modules.* is absent, announces.* is read as
+# announcements.*, and the old key names (message, fadeIn, fadeOut,
+# progress-decay, clickAction) are honored with a LEGACY_PATH console notice.
 
-# Разработчик - https://t.me/NeyOff
+settings:
 
-# ──────────────────────────────────────────────────────
-# | МОДУЛЬ: Команды (Commands)                         |
-# ──────────────────────────────────────────────────────
-commands:
+  enabled: true # Master switch. If false - modules stay silent, announcements stop
 
-  # ─ Главная команда плагина
-  ncm:
-    description: "Главная команда плагина"   # Описание команды
-    usage: "&6NeyCustomMessages &7| &fИспользование: /ncm reload"                   # Использование команды
-    permission: "neycustommessages.reload"   # Основное право доступа к команде
+permissions:
 
-    # ─ Подкоманды
-    subcommands:
+  enabled: true # Enable the permission system for the /ncm command
 
-      # ─ Перезагрузка конфигурации
-      reload:
-        description: "Перезагрузить конфиг плагина"            # Описание
-        permission: "neycustommessages.reload"                 # Право доступа
-        message-success: "&aКонфигурация успешно перезагружена!"  # Сообщение при успехе
-        message-no-permission: "&cУ вас нет прав для выполнения этой команды." # Сообщение при отсутствии прав
+  # Node of the /ncm command (reload, info)
+  reload: "neycustommessages.reload"
 
-      # ─ Помощь
-      help:
-        description: "Список доступных команд"   # Описание
-        permission: ""                           # Права (пусто = доступно всем)
-        message: "&6NeyCustomMessages &7| &fИспользование: /ncm reload" # Сообщение при вызове
+# ─────────────────────────────────────────────────────────────
+# Modules: join, quit and death. Every module delivers up to
+# four outputs - chat, title, sound and boss bar - each with
+# its own switch. A module with enabled: false leaves the
+# vanilla message alone; an enabled module REPLACES it.
+# ─────────────────────────────────────────────────────────────
+modules:
 
-# ────────────────────────────────────────────────────────
-# | МОДУЛЬ: Игрок присоединяется к серверу (Player Join) |
-# ────────────────────────────────────────────────────────
-join:
-  # Включить/выключить весь модуль приветствия
+  join:
+
+    enabled: true
+
+    chat:
+      enabled: true
+      format: "&a[+] &e{player} &7joined the server!"
+
+    title:
+      enabled: true
+      title: "&aWelcome!"
+      subtitle: "&e{player}"
+      fade_in: 10   # ticks, 20 ticks = 1 second
+      stay: 70
+      fade_out: 20
+
+    sound:
+      enabled: true
+      name: "ENTITY_PLAYER_LEVELUP"
+      volume: 1.0
+      pitch: 1.0
+
+    bossbar:
+      enabled: true
+      text: "&aHello, {player}!"
+      color: "GREEN"        # PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
+      style: "SOLID"        # SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
+      duration: 5           # seconds on screen
+      progress_decay: false # shrink the bar's progress over its duration
+
+  quit:
+
+    enabled: true
+
+    chat:
+      enabled: true
+      format: "&c[-] &e{player} &7left the server."
+
+    title:
+      enabled: false
+      title: "&cBye!"
+      subtitle: "&7See you, {player}..."
+      fade_in: 10
+      stay: 50
+      fade_out: 20
+
+    sound:
+      enabled: false
+      name: "ENTITY_ENDERMAN_TELEPORT"
+      volume: 0.8
+      pitch: 0.9
+
+    bossbar:
+      enabled: true
+      text: "&cGoodbye, {player}!"
+      color: "BLUE"
+      style: "SOLID"
+      duration: 5
+      progress_decay: false
+
+  death:
+
+    enabled: true
+
+    chat:
+      enabled: true
+      format: "&4[☠] &e{player} &7died. Cause: {death_cause}"
+
+    title:
+      enabled: true
+      title: "&4You died!"
+      subtitle: "&7Cause: {death_cause}"
+      fade_in: 5
+      stay: 60
+      fade_out: 15
+
+    sound:
+      enabled: true
+      name: "ENTITY_GENERIC_EXPLODE"
+      volume: 1.0
+      pitch: 1.2
+
+    bossbar:
+      enabled: true
+      text: "&4You died, {player}!"
+      color: "RED"
+      style: "SOLID"
+      duration: 5
+      progress_decay: false
+
+# ─────────────────────────────────────────────────────────────
+# Announcements: rotate through the list, every entry delivers
+# the same four outputs to every online player. Chat entries
+# support hover text and a click action.
+# ─────────────────────────────────────────────────────────────
+announcements:
+
   enabled: true
+  interval: 15   # seconds between announcements (1 or more)
+  random: true   # true - random order, false - round-robin
 
-  # ─ Сообщение в чате
-  message:
-    enabled: true  # Показывать ли сообщение в чате
-    format: "&a[+] &e{player} &7присоединился к серверу!"  # Формат сообщения
-    # {player} — будет заменено на имя игрока
-
-  # ─ Эффект титров (в центре экрана)
-  title:
-    enabled: true  # Показывать ли титры
-    title: "&aДобро пожаловать!"         # Основной текст (заголовок)
-    subtitle: "&e{player}"               # Второстепенный текст
-    fadeIn: 10      # Время появления (в тиках, 20 тиков = 1 сек)
-    stay: 70        # Время отображения
-    fadeOut: 20     # Время исчезновения
-
-  # ─ Звук при входе
-  sound:
-    enabled: true  # Проигрывать ли звук
-    name: "ENTITY_PLAYER_LEVELUP"  # Название звука (Minecraft ID)
-    volume: 1.0    # Громкость (0.0 — тихо, 2.0 — громко)
-    pitch: 1.0     # Высота тона (0.5 — низкий, 2.0 — высокий)
-
-  # ─ Босс-бар (полоска сверху)
-  bossbar:
-    enabled: true  # Показывать ли босс-бар
-    text: "&aПривет, {player}!"  # Текст в босс-баре
-    color: "GREEN"       # Цвет: RED, BLUE, GREEN, YELLOW и др.
-    style: "SOLID"       # Стиль: SOLID, PROGRESS, NOTCHED_6 и др.
-    duration: 5          # Длительность показа (в секундах)
-
-# ──────────────────────────────────────────────────────
-# | МОДУЛЬ: Игрок покидает сервер (Player Quit)        |
-# ──────────────────────────────────────────────────────
-quit:
-  enabled: true
-
-  message:
-    enabled: true
-    format: "&c[-] &e{player} &7покинул сервер."
-
-  title:
-    enabled: false  # Титры при выходе — выключены
-    title: "&cПока!"
-    subtitle: "&7Увидимся, {player}..."
-    fadeIn: 10
-    stay: 50
-    fadeOut: 20
-
-  sound:
-    enabled: false  # Звук при выходе — выключен
-    name: "ENTITY_ENDERMAN_TELEPORT"
-    volume: 0.8
-    pitch: 0.9
-
-  bossbar:
-    enabled: true  # Показывать ли босс-бар
-    text: "&aПривет, {player}!"  # Текст в босс-баре
-    color: "GREEN"       # Цвет: RED, BLUE, GREEN, YELLOW и др.
-    style: "SOLID"       # Стиль: SOLID, PROGRESS, NOTCHED_6 и др.
-    duration: 5          # Длительность показа (в секундах)
-
-# ──────────────────────────────────────────────────────
-# | МОДУЛЬ: Игрок умирает (Player Death)               |
-# ──────────────────────────────────────────────────────
-death:
-  enabled: true
-
-  message:
-    enabled: true
-    format: "&4[☠] &e{player} &7погиб. Причина: {death_cause}"
-    # {death_cause} — автоматически подставляется (например, "fell from height")
-
-  title:
-    enabled: true
-    title: "&4Ты погиб!"
-    subtitle: "&7Причина: {death_cause}"
-    fadeIn: 5
-    stay: 60
-    fadeOut: 15
-
-  sound:
-    enabled: true
-    name: "ENTITY_GENERIC_EXPLODE"
-    volume: 1.0
-    pitch: 1.2
-
-  bossbar:
-    enabled: true  # Показывать ли босс-бар
-    text: "&aПривет, {player}!"  # Текст в босс-баре
-    color: "GREEN"       # Цвет: RED, BLUE, GREEN, YELLOW и др.
-    style: "SOLID"       # Стиль: SOLID, PROGRESS, NOTCHED_6 и др.
-    duration: 5          # Длительность показа (в секундах)
-
-# ──────────────────────────────────────────────────────
-# | МОДУЛЬ: Анонсы (периодические сообщения)           |
-# ──────────────────────────────────────────────────────
-announces:
-  enabled: true      # Включить анонсы
-  interval: 15       # Интервал между анонсами (в секундах)
-  random: true       # Показывать анонсы в случайном порядке
-
-  messages:
+  list:
 
     announce_1:
-      message:
+
+      chat:
         enabled: true
-        format: "&6[АНОНС] &eСледующий ивент через 10 минут!"
-        hover: "&aНажми, чтобы открыть сайт\n&7https://t.me/NeyOff  "  # Текст при наведении
-        click: "https://t.me/NeyOff"                                  # Что произойдёт при клике
-        clickAction: "OPEN_URL"                                       # Действие: OPEN_URL, RUN_COMMAND, SUGGEST_COMMAND
+        format: "&6[ANNOUNCEMENT] &eThe next event starts in 10 minutes!"
+        hover: "&aClick to open the site\n&7https://t.me/NeyOff"
+        click: "https://t.me/NeyOff"
+        click_action: "OPEN_URL"   # OPEN_URL, RUN_COMMAND, SUGGEST_COMMAND
 
       title:
         enabled: true
-        title: "&6Внимание!"
-        subtitle: "&eСкоро ивент!"
-        fadeIn: 10
+        title: "&6Attention!"
+        subtitle: "&eEvent coming soon!"
+        fade_in: 10
         stay: 80
-        fadeOut: 20
+        fade_out: 20
 
       sound:
         enabled: true
@@ -170,23 +177,25 @@ announces:
 
       bossbar:
         enabled: true
-        text: "&6Ивент скоро начнётся!"
+        text: "&6The event is about to start!"
         color: "YELLOW"
         style: "SOLID"
         duration: 8
-        progress-decay: true  # Прогресс бара будет уменьшаться со временем
+        progress_decay: true
 
     announce_2:
-      message:
-        enabled: false  # Сообщение отключено
+
+      chat:
+        enabled: false
+        format: ""
 
       title:
         enabled: true
-        title: "&dСпасибо за игру!"
-        subtitle: "&7Поддержи сервер донатом!"
-        fadeIn: 15
+        title: "&dThanks for playing!"
+        subtitle: "&7Support the server with a donation!"
+        fade_in: 15
         stay: 100
-        fadeOut: 25
+        fade_out: 25
 
       sound:
         enabled: true
@@ -195,9 +204,50 @@ announces:
         pitch: 1.5
 
       bossbar:
-        enabled: false  # Босс-бар отключён
-        text: "&6Ивент скоро начнётся!"
+        enabled: false
+        text: ""
         color: "YELLOW"
         style: "SOLID"
         duration: 8
-        progress-decay: false  # Прогресс бара будет уменьшаться со временем
+        progress_decay: false
+
+# ─────────────────────────────────────────────────────────────
+# Service messages of the /ncm command
+# ─────────────────────────────────────────────────────────────
+messages:
+
+  enabled: true # Master switch for the service messages below
+  prefix: ""    # Substituted into {prefix} inside the texts (empty = no prefix)
+
+  state_on:
+    enabled: true
+    text: "&aenabled"
+
+  state_off:
+    enabled: true
+    text: "&cdisabled"
+
+  no_permission:
+    enabled: true
+    text: "{prefix}&#ff6b6bYou do not have permission to do this."
+
+  usage:
+    enabled: true
+    text:
+      - "{prefix}&#8ce0ffNeyCustomMessages commands:"
+      - "&f/ncm reload &8- &7reload the configuration"
+      - "&f/ncm info &8- &7modules, announcements and permission state"
+
+  reload:
+    enabled: true
+    text: "{prefix}&#9dff8cConfiguration reloaded &7({time} ms, {announcements} announcements, every {interval}s)."
+
+  info:
+    enabled: true
+    text:
+      - "{prefix}&7Version: &f{version}"
+      - "&7Join: &f{join}"
+      - "&7Quit: &f{quit}"
+      - "&7Death: &f{death}"
+      - "&7Announcements: &f{announcements_state} &8({count} configured, every {interval}s, {mode})"
+      - "&7Permissions: &f{permissions}"

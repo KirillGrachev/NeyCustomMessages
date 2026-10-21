@@ -1,6 +1,7 @@
 package eu.neydev.custommessages.service.impl;
 
-import eu.neydev.custommessages.config.QuitConfig;
+import eu.neydev.custommessages.config.CustomMessagesConfig;
+import eu.neydev.custommessages.config.type.MessageModule;
 import eu.neydev.custommessages.service.interfaces.IQuitMessageService;
 import eu.neydev.custommessages.service.strategy.NotificationStrategy;
 import eu.neydev.custommessages.service.strategy.context.NotificationContext;
@@ -11,10 +12,10 @@ import java.util.List;
 
 public class QuitMessageServiceImpl implements IQuitMessageService {
 
-    private final QuitConfig config;
+    private final CustomMessagesConfig config;
     private final List<NotificationStrategy> strategies;
 
-    public QuitMessageServiceImpl(QuitConfig config,
+    public QuitMessageServiceImpl(CustomMessagesConfig config,
                                   List<NotificationStrategy> strategies) {
         this.config = config;
         this.strategies = strategies;
@@ -23,7 +24,9 @@ public class QuitMessageServiceImpl implements IQuitMessageService {
     @Override
     public void handleQuit(PlayerQuitEvent event) {
 
-        if (!config.enabled()) return;
+        if (!config.isPluginEnabled() || !config.isModuleEnabled(MessageModule.QUIT)) {
+            return;
+        }
 
         Player player = event.getPlayer();
         event.setQuitMessage(null);
@@ -31,10 +34,13 @@ public class QuitMessageServiceImpl implements IQuitMessageService {
         NotificationContext context = new NotificationContext.Builder()
                 .player(player)
                 .placeholder("{player}", player.getName())
-                .config(config)
+                .bundle(config.getModuleBundle(MessageModule.QUIT))
                 .build();
 
-        for (NotificationStrategy strategy : strategies) strategy.execute(context);
+        for (NotificationStrategy strategy : strategies) {
+            strategy.execute(context);
+        }
 
     }
+
 }

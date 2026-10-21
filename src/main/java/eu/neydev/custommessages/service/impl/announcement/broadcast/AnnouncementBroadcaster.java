@@ -1,6 +1,6 @@
 package eu.neydev.custommessages.service.impl.announcement.broadcast;
 
-import eu.neydev.custommessages.config.AnnouncementConfig;
+import eu.neydev.custommessages.config.type.Announcement;
 import eu.neydev.custommessages.service.strategy.NotificationStrategy;
 import eu.neydev.custommessages.service.strategy.context.NotificationContext;
 import org.bukkit.Bukkit;
@@ -16,13 +16,14 @@ public class AnnouncementBroadcaster {
         this.strategies = strategies;
     }
 
-    public void broadcastToAllPlayers(AnnouncementConfig announcement) {
+    public void broadcastToAllPlayers(Announcement announcement) {
 
         for (Player player : Bukkit.getOnlinePlayers()) {
 
             NotificationContext context = new NotificationContext.Builder()
                     .player(player)
-                    .config(announcement)
+                    .bundle(announcement.bundle())
+                    .announcement(true)
                     .build();
 
             for (NotificationStrategy strategy : strategies) {
@@ -32,6 +33,9 @@ public class AnnouncementBroadcaster {
                 }
 
             }
+
         }
+
     }
+
 }

@@ -1,9 +1,8 @@
 package eu.neydev.custommessages.service.strategy;
 
-import eu.neydev.custommessages.config.*;
+import eu.neydev.custommessages.config.type.ChatSettings;
 import eu.neydev.custommessages.service.strategy.context.NotificationContext;
 import eu.neydev.custommessages.util.HexColorUtil;
-import eu.neydev.custommessages.util.LoggerHelper;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -12,128 +11,74 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.net.MalformedURLException;
-import java.util.Map;
-
+/**
+ * Стратегия доставки сообщения в чат.
+ *
+ * Два маршрута, как в 1.x: сообщения модулей (join, quit, death) уходят
+ * broadcastMessage всем, включая консоль, а анонсы - компонентным
+ * сообщением лично каждому игроку, потому что hover и click существуют
+ * только в компонентах. Значения hover/click проверены при загрузке
+ * конфигурации, поэтому здесь они просто применяются.
+ */
 public class ChatMessageStrategy implements NotificationStrategy {
-
-    private final LoggerHelper loggerHelper;
-
-    public ChatMessageStrategy(LoggerHelper loggerHelper) {
-        this.loggerHelper = loggerHelper;
-    }
 
     @Override
     public void execute(@NotNull NotificationContext context) {
 
-        Player player = context.getPlayer();
-        Object config = context.getConfig();
+        ChatSettings chat = context.getBundle().chat();
 
-        MessageConfig messageConfig = extractMessageConfig(config);
-
-        if (messageConfig == null || !messageConfig.enabled()
-                || messageConfig.format() == null
-                || messageConfig.format().isEmpty()) {
+        if (!chat.enabled() || chat.format().isEmpty()) {
             return;
         }
 
-        String formattedMessage = messageConfig.format();
-        for (Map.Entry<String, String> entry : context.getPlaceholders().entrySet()) {
-            formattedMessage = formattedMessage.replace(entry.getKey(), entry.getValue());
+        String formatted = context.apply(chat.format());
+
+        if (!context.isAnnouncement()) {
+
+            Bukkit.broadcastMessage(HexColorUtil.color(formatted));
+            return;
+
         }
 
-        BaseComponent[] component = createComponent(formattedMessage,
-                extractAnnouncementConfig(config));
+        Player player = context.getPlayer();
 
-        if (component != null) {
-            player.spigot().sendMessage(component);
-        } else {
-            Bukkit.broadcastMessage(HexColorUtil.color(formattedMessage));
+        if (player == null || !player.isOnline()) {
+            return;
         }
+
+        player.spigot().sendMessage(buildComponent(formatted, chat));
 
     }
 
     @Override
     public boolean isEnabled(@NotNull NotificationContext context) {
 
-        Object config = context.getConfig();
-        MessageConfig messageConfig = extractMessageConfig(config);
+        ChatSettings chat = context.getBundle().chat();
 
-        return messageConfig != null && messageConfig.enabled()
-                && messageConfig.format() != null
-                && !messageConfig.format().isEmpty();
+        return chat.enabled() && !chat.format().isEmpty();
 
     }
 
-    private @Nullable MessageConfig extractMessageConfig(Object config) {
+    private BaseComponent @NotNull [] buildComponent(@NotNull String formatted,
+                                                     @NotNull ChatSettings chat) {
 
-        if (config instanceof AnnouncementConfig) {
-            return ((AnnouncementConfig) config).message();
-        } else if (config instanceof DeathConfig) {
-            return ((DeathConfig) config).message();
-        } else if (config instanceof JoinConfig) {
-            return ((JoinConfig) config).message();
-        } else if (config instanceof QuitConfig) {
-            return ((QuitConfig) config).message();
-        }
+        TextComponent component = new TextComponent(HexColorUtil.color(formatted));
 
-        return null;
-
-    }
-
-    private AnnouncementConfig extractAnnouncementConfig(Object config) {
-        return config instanceof AnnouncementConfig ? (AnnouncementConfig) config : null;
-    }
-
-    private BaseComponent[] createComponent(String formattedMessage,
-                                            AnnouncementConfig announcementConfig) {
-
-        if (announcementConfig == null) return null;
-
-        TextComponent component = new TextComponent(HexColorUtil.color(formattedMessage));
-
-        if (announcementConfig.hoverText() != null && !announcementConfig.hoverText().isEmpty()) {
+        if (chat.hover() != null) {
 
             component.setHoverEvent(new HoverEvent(
                     HoverEvent.Action.SHOW_TEXT,
-                    new ComponentBuilder(HexColorUtil.color(announcementConfig.hoverText())).create()
-            ));
+                    new ComponentBuilder(HexColorUtil.color(chat.hover())).create()));
 
         }
 
-        if (announcementConfig.clickAction() != null && announcementConfig.clickValue() != null
-                && !announcementConfig.clickValue().isEmpty()) {
-
-            try {
-
-                ClickEvent.Action action = announcementConfig.clickAction();
-                String value = announcementConfig.clickValue().trim();
-
-                if (action == ClickEvent.Action.OPEN_URL) {
-                    new java.net.URL(value);
-                } else if (action == ClickEvent.Action.RUN_COMMAND
-                        || action == ClickEvent.Action.SUGGEST_COMMAND) {
-                    if (!value.startsWith("/")) value = "/" + value;
-                }
-
-                component.setClickEvent(new ClickEvent(action, value));
-
-            } catch (MalformedURLException e) {
-
-                loggerHelper.error("Announcement", e, "Invalid URL in announcement: "
-                        + announcementConfig.clickValue());
-
-            } catch (Exception e) {
-
-                loggerHelper.error("Announcement", e,
-                        "Error processing click event for announcement");
-
-            }
+        if (chat.clickAction() != null && chat.clickValue() != null) {
+            component.setClickEvent(new ClickEvent(chat.clickAction(), chat.clickValue()));
         }
 
         return new BaseComponent[]{component};
 
     }
+
 }

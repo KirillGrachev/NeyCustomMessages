@@ -1,6 +1,7 @@
 package eu.neydev.custommessages.service.impl;
 
-import eu.neydev.custommessages.config.JoinConfig;
+import eu.neydev.custommessages.config.CustomMessagesConfig;
+import eu.neydev.custommessages.config.type.MessageModule;
 import eu.neydev.custommessages.service.interfaces.IJoinMessageService;
 import eu.neydev.custommessages.service.strategy.NotificationStrategy;
 import eu.neydev.custommessages.service.strategy.context.NotificationContext;
@@ -11,10 +12,10 @@ import java.util.List;
 
 public class JoinMessageServiceImpl implements IJoinMessageService {
 
-    private final JoinConfig config;
+    private final CustomMessagesConfig config;
     private final List<NotificationStrategy> strategies;
 
-    public JoinMessageServiceImpl(JoinConfig config,
+    public JoinMessageServiceImpl(CustomMessagesConfig config,
                                   List<NotificationStrategy> strategies) {
         this.config = config;
         this.strategies = strategies;
@@ -23,7 +24,9 @@ public class JoinMessageServiceImpl implements IJoinMessageService {
     @Override
     public void handleJoin(PlayerJoinEvent event) {
 
-        if (!config.enabled()) return;
+        if (!config.isPluginEnabled() || !config.isModuleEnabled(MessageModule.JOIN)) {
+            return;
+        }
 
         Player player = event.getPlayer();
         event.setJoinMessage(null);
@@ -31,10 +34,13 @@ public class JoinMessageServiceImpl implements IJoinMessageService {
         NotificationContext context = new NotificationContext.Builder()
                 .player(player)
                 .placeholder("{player}", player.getName())
-                .config(config)
+                .bundle(config.getModuleBundle(MessageModule.JOIN))
                 .build();
 
-        for (NotificationStrategy strategy : strategies) strategy.execute(context);
+        for (NotificationStrategy strategy : strategies) {
+            strategy.execute(context);
+        }
 
     }
+
 }

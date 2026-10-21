@@ -1,15 +1,14 @@
 package eu.neydev.custommessages.service.strategy;
 
-import eu.neydev.custommessages.config.*;
+import eu.neydev.custommessages.config.type.TitleSettings;
 import eu.neydev.custommessages.service.interfaces.ITitleService;
 import eu.neydev.custommessages.service.strategy.context.NotificationContext;
-import eu.neydev.custommessages.util.HexColorUtil;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-
+/**
+ * Стратегия доставки титра (текст в центре экрана).
+ */
 public class TitleStrategy implements NotificationStrategy {
 
     private final ITitleService titleService;
@@ -21,35 +20,21 @@ public class TitleStrategy implements NotificationStrategy {
     @Override
     public void execute(@NotNull NotificationContext context) {
 
-        Player player = context.getPlayer();
-        Object config = context.getConfig();
+        TitleSettings title = context.getBundle().title();
 
-        TitleConfig titleConfig = extractTitleConfig(config);
-
-        if (titleConfig == null || !titleConfig.enabled() ||
-                (titleConfig.title() == null || titleConfig.title().isEmpty()) &&
-                        (titleConfig.subtitle() == null
-                                || titleConfig.subtitle().isEmpty())) {
+        if (!isEnabled(context)) {
             return;
         }
 
-        String title = titleConfig.title() != null ? titleConfig.title() : "";
-        String subtitle = titleConfig.subtitle() != null ? titleConfig.subtitle() : "";
-
-        for (Map.Entry<String, String> entry : context.getPlaceholders().entrySet()) {
-
-            title = title.replace(entry.getKey(), entry.getValue());
-            subtitle = subtitle.replace(entry.getKey(), entry.getValue());
-
-        }
+        Player player = context.getPlayer();
 
         titleService.sendTitle(
                 player,
-                HexColorUtil.color(title),
-                HexColorUtil.color(subtitle),
-                titleConfig.fadeIn(),
-                titleConfig.stay(),
-                titleConfig.fadeOut()
+                context.apply(title.title()),
+                context.apply(title.subtitle()),
+                title.fadeIn(),
+                title.stay(),
+                title.fadeOut()
         );
 
     }
@@ -57,29 +42,10 @@ public class TitleStrategy implements NotificationStrategy {
     @Override
     public boolean isEnabled(@NotNull NotificationContext context) {
 
-        Object config = context.getConfig();
-        TitleConfig titleConfig = extractTitleConfig(config);
+        TitleSettings title = context.getBundle().title();
 
-        return titleConfig != null && titleConfig.enabled() &&
-                ((titleConfig.title() != null && !titleConfig.title().isEmpty()) ||
-                        (titleConfig.subtitle() != null
-                                && !titleConfig.subtitle().isEmpty()));
+        return title.enabled() && title.hasContent();
 
     }
 
-    private @Nullable TitleConfig extractTitleConfig(Object config) {
-
-        if (config instanceof AnnouncementConfig) {
-            return ((AnnouncementConfig) config).title();
-        } else if (config instanceof DeathConfig) {
-            return ((DeathConfig) config).title();
-        } else if (config instanceof JoinConfig) {
-            return ((JoinConfig) config).title();
-        } else if (config instanceof QuitConfig) {
-            return ((QuitConfig) config).title();
-        }
-
-        return null;
-
-    }
 }
