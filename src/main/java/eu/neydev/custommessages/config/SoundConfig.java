@@ -1,0 +1,8 @@
+package eu.neydev.custommessages.config;
+
+public record SoundConfig(
+        boolean enabled,
+        String name,
+        float volume,
+        float pitch
+) {}
