@@ -487,7 +487,7 @@ public class ConfigManager implements CustomMessagesConfig {
         }
 
         boolean enabled = section.getBoolean("enabled", defaults.enabled());
-        String format = section.getString("format", defaults.format());
+        String format = readFormat(section, path + ".format", defaults.format());
 
         if (!interactive) {
             return new ChatSettings(enabled, format == null ? "" : format, null, null, null);
@@ -497,21 +497,23 @@ public class ConfigManager implements CustomMessagesConfig {
         String clickValue = blankToNull(section.getString("click"));
         ClickEvent.Action action = readClickAction(section, path);
 
-        if (action != null && clickValue == null) {
+        if (action != null) {
 
-            consoleService.log(ConsoleMessage.CLICK_IGNORED,
-                    "path", path + ".click_action",
-                    "reason", "no click value is set");
-            action = null;
+            if (clickValue == null) {
 
-        }
+                consoleService.log(ConsoleMessage.CLICK_IGNORED,
+                        "path", path + ".click_action",
+                        "reason", "no click value is set");
+                action = null;
 
-        if (action == ClickEvent.Action.OPEN_URL && !isValidUrl(clickValue)) {
+            } else if (action == ClickEvent.Action.OPEN_URL && !isValidUrl(clickValue)) {
 
-            consoleService.log(ConsoleMessage.CLICK_IGNORED,
-                    "path", path + ".click",
-                    "reason", "not a valid http(s) URL: " + clickValue);
-            action = null;
+                consoleService.log(ConsoleMessage.CLICK_IGNORED,
+                        "path", path + ".click",
+                        "reason", "not a valid http(s) URL: " + clickValue);
+                action = null;
+
+            }
 
         }
 
@@ -524,6 +526,33 @@ public class ConfigManager implements CustomMessagesConfig {
         }
 
         return new ChatSettings(enabled, format == null ? "" : format, hover, action, clickValue);
+
+    }
+
+    /**
+     * Читает текст сообщения: только строка. Список или число на месте
+     * format означают опечатку в файле - Bukkit привел бы их к строке
+     * вида "[line]", которая и ушла бы игрокам буквально.
+     */
+    private @NotNull String readFormat(@NotNull ConfigurationSection section,
+                                       @NotNull String path,
+                                       @NotNull String defaultValue) {
+
+        Object raw = section.get("format");
+
+        if (raw == null) {
+            return defaultValue;
+        }
+
+        if (raw instanceof String text) {
+            return text;
+        }
+
+        consoleService.log(ConsoleMessage.INVALID_VALUE,
+                "path", path,
+                "value", String.valueOf(raw),
+                "defaultValue", defaultValue);
+        return defaultValue;
 
     }
 
@@ -570,11 +599,7 @@ public class ConfigManager implements CustomMessagesConfig {
 
     }
 
-    private boolean isValidUrl(@Nullable String value) {
-
-        if (value == null) {
-            return false;
-        }
+    private boolean isValidUrl(@NotNull String value) {
 
         try {
 
@@ -741,15 +766,14 @@ public class ConfigManager implements CustomMessagesConfig {
 
     }
 
-    private static @Nullable Sound resolveSound(@NotNull String name) {
-
-        try {
-            return Sound.valueOf(name);
-        } catch (IllegalArgumentException exception) {
-            // Ядро без этого звука: вывод останется без звука, isPlayable() вернет false
-            return null;
-        }
-
+    /**
+     * Звук дефолтов модулей. api-version '1.20' гарантирует, что все три
+     * имени (ENTITY_PLAYER_LEVELUP, ENTITY_ENDERMAN_TELEPORT,
+     * ENTITY_GENERIC_EXPLODE) есть в перечислении - они там с 1.13,
+     * поэтому защитного catch здесь нет.
+     */
+    private static @NotNull Sound resolveSound(@NotNull String name) {
+        return Sound.valueOf(name);
     }
 
     private @NotNull BarColor parseBarColor(@Nullable Object raw, @NotNull String path,

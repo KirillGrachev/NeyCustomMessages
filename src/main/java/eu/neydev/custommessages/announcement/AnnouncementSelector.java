@@ -26,11 +26,20 @@ public class AnnouncementSelector {
     private final AtomicInteger counter = new AtomicInteger();
 
     public AnnouncementSelector() {
-        this(null);
+        this(null, 0);
     }
 
     AnnouncementSelector(@Nullable Random injectedRandom) {
+        this(injectedRandom, 0);
+    }
+
+    /**
+     * Конструктор для тестов: стартовое значение счетчика позволяет
+     * проверить переход через переполнение без миллиардов проходов.
+     */
+    AnnouncementSelector(@Nullable Random injectedRandom, int startCounter) {
         this.injectedRandom = injectedRandom;
+        this.counter.set(startCounter);
     }
 
     /**
