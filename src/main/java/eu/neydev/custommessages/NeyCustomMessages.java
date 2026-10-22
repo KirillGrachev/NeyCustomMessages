@@ -1,58 +1,87 @@
 package eu.neydev.custommessages;
 
-import eu.neydev.custommessages.command.CommandManager;
+import eu.neydev.custommessages.command.CommandDispatcher;
+import eu.neydev.custommessages.command.CustomMessagesCommand;
+import eu.neydev.custommessages.command.CustomMessagesSubCommand;
+import eu.neydev.custommessages.command.sub.InfoSubCommand;
+import eu.neydev.custommessages.command.sub.ReloadSubCommand;
 import eu.neydev.custommessages.config.ConfigManager;
-import eu.neydev.custommessages.lifecycle.PluginLifecycleManager;
+import eu.neydev.custommessages.event.EventDispatcher;
+import eu.neydev.custommessages.listener.PlayerDeathListener;
+import eu.neydev.custommessages.listener.PlayerJoinListener;
+import eu.neydev.custommessages.listener.PlayerQuitListener;
 import eu.neydev.custommessages.service.ConsoleService;
-import eu.neydev.custommessages.util.LoggerHelper;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
+/**
+ * Точка входа плагина.
+ *
+ * Класс не final осознанно (в 1.x он был final): интеграционные тесты
+ * MockBukkit грузят плагин через прокси-подкласс, а наследование JavaPlugin
+ * в продакшене никто не использует - подклассы создаются только тестовой
+ * средой.
+ */
 public class NeyCustomMessages extends JavaPlugin {
 
-    private PluginLifecycleManager lifecycleManager;
-    private LoggerHelper loggerHelper;
+    private static final String COMMAND_CONTROL = "ncm";
+
     private ConsoleService consoleService;
     private ConfigManager configManager;
-    private CommandManager commandManager;
+    private ServiceContainer services;
+    private @Nullable CommandDispatcher commandDispatcher;
 
     @Override
     public void onEnable() {
 
-        this.loggerHelper = new LoggerHelper(this);
         this.consoleService = new ConsoleService(this);
         this.configManager = new ConfigManager(this, consoleService);
+        this.services = new ServiceContainer(this, configManager, consoleService);
 
-        this.lifecycleManager = new PluginLifecycleManager(this,
-                loggerHelper, consoleService, configManager);
+        new EventDispatcher(this).registerEvents(
+                new PlayerJoinListener(configManager, services.getNotifier()),
+                new PlayerQuitListener(configManager, services.getNotifier()),
+                new PlayerDeathListener(configManager, services.getNotifier()));
 
-        this.lifecycleManager.enable();
+        services.getAnnouncementService().start();
 
-        this.commandManager = new CommandManager(this);
+        this.commandDispatcher = new CommandDispatcher(this, consoleService);
+        commandDispatcher.registerCommand(COMMAND_CONTROL, new CustomMessagesCommand(
+                services.getMessageService(),
+                services.getPermissionService(),
+                buildSubCommands()
+        ));
 
-        this.getCommand("ncm").setExecutor(commandManager);
-        this.getCommand("ncm").setTabCompleter(commandManager);
+        getLogger().info("NeyCustomMessages started successfully.");
 
     }
 
     @Override
     public void onDisable() {
-        if (this.lifecycleManager != null) {
-            this.lifecycleManager.disable();
+
+        services.getAnnouncementService().stop();
+        services.getBossBarService().removeAll();
+
+        if (commandDispatcher != null) {
+            commandDispatcher.unregisterCommand(COMMAND_CONTROL);
         }
+
+        getLogger().info("NeyCustomMessages stopped.");
+
     }
 
-    public void reloadPlugin() {
-        if (this.lifecycleManager != null) {
-            this.lifecycleManager.reload();
-        }
-    }
-
-    public LoggerHelper getLoggerHelper() {
-        return loggerHelper;
-    }
-
-    public PluginLifecycleManager getLifecycleManager() {
-        return lifecycleManager;
+    /**
+     * Собирает подкоманды: команда получает зависимости из контейнера,
+     * а не тянет их из плагина сама.
+     */
+    private @NotNull List<CustomMessagesSubCommand> buildSubCommands() {
+        return List.of(
+                new ReloadSubCommand(configManager, services.getMessageService()),
+                new InfoSubCommand(this, configManager, services.getMessageService())
+        );
     }
 
     public ConsoleService getConsoleService() {
@@ -62,4 +91,9 @@ public class NeyCustomMessages extends JavaPlugin {
     public ConfigManager getConfigManager() {
         return configManager;
     }
+
+    public ServiceContainer getServices() {
+        return services;
+    }
+
 }

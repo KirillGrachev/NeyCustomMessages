@@ -8,5 +8,16 @@ website: https://t.me/NeyOff
 
 commands:
   ncm:
-    description: Reload the plugin configuration
-    usage: /<command> reload
+    description: NeyCustomMessages control command
+    usage: /ncm <reload|info>
+    aliases: [neycustommessages]
+
+permissions:
+  neycustommessages.reload:
+    description: Reload the configuration and read the current state
+    default: op
+  neycustommessages.admin:
+    description: All NeyCustomMessages permissions
+    default: op
+    children:
+      neycustommessages.reload: true
