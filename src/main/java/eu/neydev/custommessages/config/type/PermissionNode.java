@@ -1,7 +1,8 @@
 package eu.neydev.custommessages.config.type;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Узлы прав плагина.
@@ -16,13 +17,19 @@ import org.jetbrains.annotations.Nullable;
 public enum PermissionNode {
 
     RELOAD("reload", "neycustommessages.reload",
-            new String[]{"commands.ncm.permission", "commands.ncm.subcommands.reload.permission"});
+            List.of("commands.ncm.permission", "commands.ncm.subcommands.reload.permission"));
 
     private final String configKey;
     private final String defaultPermission;
-    private final String[] legacyPaths;
 
-    PermissionNode(String configKey, String defaultPermission, String[] legacyPaths) {
+    /**
+     * List.of в аргументах конструктора неизменяем, но анализатор судит по
+     * объявленному типу - отсюда точечное подавление вместо замены типа.
+     */
+    @SuppressWarnings("ImmutableEnumChecker")
+    private final List<String> legacyPaths;
+
+    PermissionNode(String configKey, String defaultPermission, List<String> legacyPaths) {
         this.configKey = configKey;
         this.defaultPermission = defaultPermission;
         this.legacyPaths = legacyPaths;
@@ -37,10 +44,10 @@ public enum PermissionNode {
     }
 
     /**
-     * Пути узла в конфигурации 1.x, пустые для узлов, появившихся в 2.0.
+     * Пути узла в конфигурации 1.x, пустой список для узлов, появившихся в 2.0.
      */
-    public @Nullable String[] getLegacyPaths() {
-        return legacyPaths.length == 0 ? null : legacyPaths;
+    public @NotNull List<String> getLegacyPaths() {
+        return legacyPaths;
     }
 
 }

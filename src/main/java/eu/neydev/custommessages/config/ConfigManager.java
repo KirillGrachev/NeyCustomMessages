@@ -104,12 +104,6 @@ public class ConfigManager implements CustomMessagesConfig {
     private static final boolean DEFAULT_PERMISSIONS_ENABLED = true;
     private static final int DEFAULT_INTERVAL = 15;
     private static final boolean DEFAULT_RANDOM = true;
-    private static final int DEFAULT_FADE_IN = 10;
-    private static final int DEFAULT_STAY = 70;
-    private static final int DEFAULT_FADE_OUT = 20;
-    private static final int DEFAULT_DURATION = 5;
-    private static final float DEFAULT_VOLUME = 1.0f;
-    private static final float DEFAULT_PITCH = 1.0f;
 
     /** Окрашенные дефолты служебных сообщений: fallback не пересобирает строки на каждый вызов. */
     private static final Map<MessageKey, List<String>> DEFAULT_MESSAGES;
@@ -913,22 +907,16 @@ public class ConfigManager implements CustomMessagesConfig {
             return PermissionNode.RELOAD.getDefaultPermission();
         }
 
-        String[] legacyPaths = PermissionNode.RELOAD.getLegacyPaths();
+        for (String legacyPath : PermissionNode.RELOAD.getLegacyPaths()) {
 
-        if (legacyPaths != null) {
+            String legacy = config.getString(legacyPath);
 
-            for (String legacyPath : legacyPaths) {
+            if (legacy != null && !legacy.isBlank()) {
 
-                String legacy = config.getString(legacyPath);
-
-                if (legacy != null && !legacy.isBlank()) {
-
-                    consoleService.log(ConsoleMessage.LEGACY_PATH,
-                            "path", legacyPath,
-                            "replacement", PATH_PERMISSION_RELOAD);
-                    return legacy;
-
-                }
+                consoleService.log(ConsoleMessage.LEGACY_PATH,
+                        "path", legacyPath,
+                        "replacement", PATH_PERMISSION_RELOAD);
+                return legacy;
 
             }
 

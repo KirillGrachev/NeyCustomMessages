@@ -80,10 +80,11 @@ class ConfigTypesTest {
         assertEquals("neycustommessages.reload", PermissionNode.RELOAD.getDefaultPermission());
         assertEquals(1, PermissionNode.values().length);
 
-        String[] legacy = PermissionNode.RELOAD.getLegacyPaths();
+        java.util.List<String> legacy = PermissionNode.RELOAD.getLegacyPaths();
 
-        assertNotNull(legacy);
-        assertEquals(2, legacy.length, "в 1.x право задавалось в двух местах");
+        assertEquals(java.util.List.of("commands.ncm.permission",
+                "commands.ncm.subcommands.reload.permission"), legacy,
+                "в 1.x право задавалось в двух местах");
 
     }
 
