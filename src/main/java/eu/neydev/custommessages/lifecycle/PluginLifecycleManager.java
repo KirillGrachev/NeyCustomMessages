@@ -1,21 +1,18 @@
 package eu.neydev.custommessages.lifecycle;
 
 import eu.neydev.custommessages.NeyCustomMessages;
+import eu.neydev.custommessages.announcement.AnnouncementSelector;
+import eu.neydev.custommessages.announcement.AnnouncementService;
 import eu.neydev.custommessages.config.ConfigManager;
-import eu.neydev.custommessages.config.type.ConsoleMessage;
 import eu.neydev.custommessages.di.ServiceContainer;
 import eu.neydev.custommessages.event.EventDispatcher;
 import eu.neydev.custommessages.listener.PlayerDeathListener;
 import eu.neydev.custommessages.listener.PlayerJoinListener;
 import eu.neydev.custommessages.listener.PlayerQuitListener;
-import eu.neydev.custommessages.service.AnnouncementService;
 import eu.neydev.custommessages.service.BossBarService;
 import eu.neydev.custommessages.service.ConsoleService;
 import eu.neydev.custommessages.service.Notifier;
-import eu.neydev.custommessages.service.impl.announcement.scheduler.AnnouncementScheduler;
-import eu.neydev.custommessages.task.AnnounceTask;
 import eu.neydev.custommessages.util.LoggerHelper;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 public class PluginLifecycleManager {
@@ -26,7 +23,6 @@ public class PluginLifecycleManager {
     private final ConfigManager configManager;
 
     private final ServiceContainer container;
-    private BukkitTask announceTask;
 
     public PluginLifecycleManager(NeyCustomMessages plugin,
                                   LoggerHelper loggerHelper,
@@ -47,7 +43,7 @@ public class PluginLifecycleManager {
             loggerHelper.info("DI", "ServiceContainer built successfully.");
 
             registerEventListeners();
-            startAnnouncementTask();
+            container.get(AnnouncementService.class).start();
 
             loggerHelper.info("Main", "NeyCustomMessages started successfully.");
 
@@ -64,8 +60,12 @@ public class PluginLifecycleManager {
 
         loggerHelper.info("Main", "Starting plugin shutdown...");
 
-        stopAnnouncementTask();
-        removeAllBossBars();
+        container.get(AnnouncementService.class).stop();
+
+        BossBarService bossBarService = container.get(BossBarService.class);
+        if (bossBarService != null) {
+            bossBarService.removeAll();
+        }
 
         loggerHelper.info("Main", "NeyCustomMessages stopped.");
 
@@ -75,35 +75,16 @@ public class PluginLifecycleManager {
 
         loggerHelper.info("Config", "Starting plugin reload...");
 
-        stopAnnouncementTask();
-        removeAllBossBars();
-
         configManager.reload();
 
-        startAnnouncementTask();
-        loggerHelper.info("Config", "Plugin reload completed successfully.");
-
-    }
-
-    private void stopAnnouncementTask() {
-
-        if (announceTask != null) {
-
-            announceTask.cancel();
-            announceTask = null;
-            loggerHelper.info("Announcements", "Announcement task cancelled.");
-
-        }
-
-    }
-
-    private void removeAllBossBars() {
-
         BossBarService bossBarService = container.get(BossBarService.class);
-
         if (bossBarService != null) {
             bossBarService.removeAll();
         }
+
+        container.get(AnnouncementService.class).restart();
+
+        loggerHelper.info("Config", "Plugin reload completed successfully.");
 
     }
 
@@ -116,9 +97,8 @@ public class PluginLifecycleManager {
 
         container.bind(BossBarService.class, bossBarService);
         container.bind(Notifier.class, notifier);
-        container.bind(AnnouncementScheduler.class, new AnnouncementScheduler());
         container.bind(AnnouncementService.class, new AnnouncementService(
-                configManager, container.get(AnnouncementScheduler.class), notifier));
+                plugin, configManager, consoleService, new AnnouncementSelector(), notifier));
 
     }
 
@@ -134,37 +114,6 @@ public class PluginLifecycleManager {
         );
 
         loggerHelper.info("Events", "Event listeners registered.");
-
-    }
-
-    private void startAnnouncementTask() {
-
-        if (!configManager.isPluginEnabled() || !configManager.areAnnouncementsEnabled()) {
-            return;
-        }
-
-        if (configManager.getAnnouncements().isEmpty()) {
-
-            consoleService.log(ConsoleMessage.NO_ANNOUNCEMENTS);
-            return;
-
-        }
-
-        try {
-
-            AnnouncementService announcementService = container.get(AnnouncementService.class);
-            int intervalTicks = configManager.getAnnouncementInterval() * 20;
-
-            announceTask = new AnnounceTask(plugin, announcementService)
-                    .runTaskTimer(plugin, 0L, intervalTicks);
-            loggerHelper.info("Announcements", "Announcement task started with interval %d seconds.",
-                    configManager.getAnnouncementInterval());
-
-        } catch (Exception e) {
-
-            loggerHelper.error("Announcements", e, "Failed to start announcement task.");
-
-        }
 
     }
 
