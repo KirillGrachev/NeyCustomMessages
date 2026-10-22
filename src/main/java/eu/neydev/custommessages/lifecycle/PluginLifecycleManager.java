@@ -2,41 +2,21 @@ package eu.neydev.custommessages.lifecycle;
 
 import eu.neydev.custommessages.NeyCustomMessages;
 import eu.neydev.custommessages.config.ConfigManager;
-import eu.neydev.custommessages.config.CustomMessagesConfig;
 import eu.neydev.custommessages.config.type.ConsoleMessage;
 import eu.neydev.custommessages.di.ServiceContainer;
 import eu.neydev.custommessages.event.EventDispatcher;
 import eu.neydev.custommessages.listener.PlayerDeathListener;
 import eu.neydev.custommessages.listener.PlayerJoinListener;
 import eu.neydev.custommessages.listener.PlayerQuitListener;
+import eu.neydev.custommessages.service.AnnouncementService;
+import eu.neydev.custommessages.service.BossBarService;
 import eu.neydev.custommessages.service.ConsoleService;
-import eu.neydev.custommessages.service.impl.AnnouncementServiceImpl;
-import eu.neydev.custommessages.service.impl.BossBarServiceImpl;
-import eu.neydev.custommessages.service.impl.DeathMessageServiceImpl;
-import eu.neydev.custommessages.service.impl.JoinMessageServiceImpl;
-import eu.neydev.custommessages.service.impl.QuitMessageServiceImpl;
-import eu.neydev.custommessages.service.impl.SoundServiceImpl;
-import eu.neydev.custommessages.service.impl.TitleServiceImpl;
-import eu.neydev.custommessages.service.impl.announcement.broadcast.AnnouncementBroadcaster;
+import eu.neydev.custommessages.service.Notifier;
 import eu.neydev.custommessages.service.impl.announcement.scheduler.AnnouncementScheduler;
-import eu.neydev.custommessages.service.interfaces.IAnnouncementService;
-import eu.neydev.custommessages.service.interfaces.IBossBarService;
-import eu.neydev.custommessages.service.interfaces.IDeathMessageService;
-import eu.neydev.custommessages.service.interfaces.IJoinMessageService;
-import eu.neydev.custommessages.service.interfaces.IQuitMessageService;
-import eu.neydev.custommessages.service.interfaces.ISoundService;
-import eu.neydev.custommessages.service.interfaces.ITitleService;
-import eu.neydev.custommessages.service.strategy.BossBarStrategy;
-import eu.neydev.custommessages.service.strategy.ChatMessageStrategy;
-import eu.neydev.custommessages.service.strategy.NotificationStrategy;
-import eu.neydev.custommessages.service.strategy.SoundStrategy;
-import eu.neydev.custommessages.service.strategy.TitleStrategy;
 import eu.neydev.custommessages.task.AnnounceTask;
 import eu.neydev.custommessages.util.LoggerHelper;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class PluginLifecycleManager {
 
@@ -63,7 +43,7 @@ public class PluginLifecycleManager {
 
         try {
 
-            buildContainer(configManager);
+            buildContainer();
             loggerHelper.info("DI", "ServiceContainer built successfully.");
 
             registerEventListeners();
@@ -100,9 +80,6 @@ public class PluginLifecycleManager {
 
         configManager.reload();
 
-        buildContainer(configManager);
-        loggerHelper.info("DI", "New ServiceContainer built with updated configuration.");
-
         startAnnouncementTask();
         loggerHelper.info("Config", "Plugin reload completed successfully.");
 
@@ -122,70 +99,38 @@ public class PluginLifecycleManager {
 
     private void removeAllBossBars() {
 
-        if (container == null) {
-            return;
-        }
+        BossBarService bossBarService = container.get(BossBarService.class);
 
-        try {
-
-            IBossBarService bossBarService = container.get(IBossBarService.class);
-
-            if (bossBarService != null) {
-
-                bossBarService.removeAllBossBars();
-                loggerHelper.info("BossBar", "All boss bars removed.");
-
-            }
-
-        } catch (Exception e) {
-            loggerHelper.warn("BossBar", "Error removing boss bars during shutdown: %s", e.getMessage());
+        if (bossBarService != null) {
+            bossBarService.removeAll();
         }
 
     }
 
-    private void buildContainer(@NotNull CustomMessagesConfig config) {
+    private void buildContainer() {
 
         container.clear();
 
-        container.bind(ITitleService.class, new TitleServiceImpl());
-        container.bind(ISoundService.class, new SoundServiceImpl());
-        container.bind(IBossBarService.class, new BossBarServiceImpl(plugin));
+        BossBarService bossBarService = new BossBarService(plugin);
+        Notifier notifier = new Notifier(plugin, bossBarService);
 
-        container.bindMulti(NotificationStrategy.class, new ChatMessageStrategy());
-        container.bindMulti(NotificationStrategy.class, new TitleStrategy(container.get(ITitleService.class)));
-        container.bindMulti(NotificationStrategy.class, new SoundStrategy(container.get(ISoundService.class)));
-        container.bindMulti(NotificationStrategy.class, new BossBarStrategy(container.get(IBossBarService.class)));
-
-        List<NotificationStrategy> strategies = container.getAll(NotificationStrategy.class);
-
-        AnnouncementBroadcaster broadcaster = new AnnouncementBroadcaster(strategies);
-        AnnouncementScheduler scheduler = new AnnouncementScheduler();
-
-        container.bind(AnnouncementBroadcaster.class, broadcaster);
-        container.bind(AnnouncementScheduler.class, scheduler);
-
-        container.bind(IAnnouncementService.class,
-                new AnnouncementServiceImpl(config, scheduler, broadcaster));
-
-        container.bind(IDeathMessageService.class, new DeathMessageServiceImpl(config, strategies,
-                plugin));
-
-        container.bind(IJoinMessageService.class, new JoinMessageServiceImpl(config, strategies));
-        container.bind(IQuitMessageService.class, new QuitMessageServiceImpl(config, strategies));
+        container.bind(BossBarService.class, bossBarService);
+        container.bind(Notifier.class, notifier);
+        container.bind(AnnouncementScheduler.class, new AnnouncementScheduler());
+        container.bind(AnnouncementService.class, new AnnouncementService(
+                configManager, container.get(AnnouncementScheduler.class), notifier));
 
     }
 
     private void registerEventListeners() {
 
-        IDeathMessageService deathService = container.get(IDeathMessageService.class);
-        IJoinMessageService joinService = container.get(IJoinMessageService.class);
-        IQuitMessageService quitService = container.get(IQuitMessageService.class);
+        Notifier notifier = container.get(Notifier.class);
 
         EventDispatcher eventDispatcher = new EventDispatcher(plugin);
         eventDispatcher.registerEvents(
-                new PlayerDeathListener(deathService),
-                new PlayerJoinListener(joinService),
-                new PlayerQuitListener(quitService)
+                new PlayerDeathListener(plugin, configManager, notifier),
+                new PlayerJoinListener(configManager, notifier),
+                new PlayerQuitListener(configManager, notifier)
         );
 
         loggerHelper.info("Events", "Event listeners registered.");
@@ -207,7 +152,7 @@ public class PluginLifecycleManager {
 
         try {
 
-            IAnnouncementService announcementService = container.get(IAnnouncementService.class);
+            AnnouncementService announcementService = container.get(AnnouncementService.class);
             int intervalTicks = configManager.getAnnouncementInterval() * 20;
 
             announceTask = new AnnounceTask(plugin, announcementService)
@@ -223,7 +168,7 @@ public class PluginLifecycleManager {
 
     }
 
-    public ServiceContainer getContainer() {
+    public @NotNull ServiceContainer getContainer() {
         return container;
     }
 

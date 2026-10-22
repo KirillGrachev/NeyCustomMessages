@@ -1,20 +1,25 @@
 package eu.neydev.custommessages.task;
 
 import eu.neydev.custommessages.NeyCustomMessages;
-import eu.neydev.custommessages.service.interfaces.IAnnouncementService;
+import eu.neydev.custommessages.service.AnnouncementService;
 import eu.neydev.custommessages.util.LoggerHelper;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.logging.Level;
-
+/**
+ * Задача ротации анонсов.
+ *
+ * Исключение внутри прохода глушится и уходит в лог: упавший один раз
+ * анонс не должен отменять BukkitTask и оставлять сервер без объявлений
+ * до следующего reload.
+ */
 public class AnnounceTask extends BukkitRunnable {
 
-    private final IAnnouncementService announcementService;
+    private final AnnouncementService announcementService;
     private final LoggerHelper loggerHelper;
 
     public AnnounceTask(@NotNull NeyCustomMessages plugin,
-                        IAnnouncementService announcementService) {
+                        @NotNull AnnouncementService announcementService) {
         this.announcementService = announcementService;
         this.loggerHelper = plugin.getLoggerHelper();
     }
@@ -23,10 +28,11 @@ public class AnnounceTask extends BukkitRunnable {
     public void run() {
 
         try {
-            announcementService.runAnnouncement();
+            announcementService.runOnce();
         } catch (Exception e) {
             loggerHelper.error("AnnounceTask", e, "Failed to run announcement");
         }
 
     }
+
 }
