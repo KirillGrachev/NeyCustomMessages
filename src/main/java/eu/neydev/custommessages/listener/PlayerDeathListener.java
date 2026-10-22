@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -21,14 +20,11 @@ import java.util.Map;
  */
 public class PlayerDeathListener implements Listener {
 
-    private final Plugin plugin;
     private final CustomMessagesConfig config;
     private final Notifier notifier;
 
-    public PlayerDeathListener(@NotNull Plugin plugin,
-                               @NotNull CustomMessagesConfig config,
+    public PlayerDeathListener(@NotNull CustomMessagesConfig config,
                                @NotNull Notifier notifier) {
-        this.plugin = plugin;
         this.config = config;
         this.notifier = notifier;
     }
@@ -48,13 +44,6 @@ public class PlayerDeathListener implements Listener {
                 config.getModuleBundle(MessageModule.DEATH),
                 Map.of("{player}", player.getName(),
                         "{death_cause}", deathMessage != null ? deathMessage : "unknown"));
-
-        plugin.getServer().getScheduler().runTaskLater(plugin,
-                () -> {
-                    if (player.isDead()) {
-                        player.spigot().respawn();
-                    }
-                }, 1L);
 
     }
 

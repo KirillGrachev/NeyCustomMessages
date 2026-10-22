@@ -108,7 +108,7 @@ public class PluginLifecycleManager {
 
         EventDispatcher eventDispatcher = new EventDispatcher(plugin);
         eventDispatcher.registerEvents(
-                new PlayerDeathListener(plugin, configManager, notifier),
+                new PlayerDeathListener(configManager, notifier),
                 new PlayerJoinListener(configManager, notifier),
                 new PlayerQuitListener(configManager, notifier)
         );
